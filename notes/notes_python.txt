@@ -1,0 +1,22 @@
+Division of folders/functions/methods:
+
+	
+	1. file handling
+	
+	2. preprocessing:
+		formatted data
+		original data
+		take out the problems from the files
+	
+	3. classifier:
+		classify
+		predict
+
+	
+	4. snippets:
+		plot
+
+	5. utils:
+		extra
+	
+	6. run

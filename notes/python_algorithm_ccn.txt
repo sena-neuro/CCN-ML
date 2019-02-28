@@ -1,0 +1,7 @@
+Algorithm: 
+
+Data Read
+ICA/PCA reduction technique, Maxwell filters, bad channels, denoising, effect matched filtering, artifacts, noise covariance matrix
+x2	Support Vector Machine
+x2	Cross Validation, Parameter Tuning, Generalizability
+x2	Results

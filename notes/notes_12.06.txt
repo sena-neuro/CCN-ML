@@ -1,0 +1,22 @@
+=====================================================================
+Done:
+=====================================================================
+
+* Read 10 papers which have used EEG data manipulation and machine learning (topics: migraine, depression, random)
+* Found the statistical methods that can be included into our project in preprocessing side: 
+	Feature extraction 
+	ML (LR, NN, SVM)
+	Remember: (periodogram,AR,MUSIC)-(PSD)-(LR, MLPNN)
+* Found the frequency bands and their meanings
+* Started writing the classifier of CCN
+
+=====================================================================
+To be done:
+=====================================================================
+
+* Ask for mat files needed, just a sample of them so that you can make the code running. <= .SET data
+
+* Usage of MNE <= Not now
+* Usage of SVM libraries <= Not now
+* Ask for dirty data <= clean data will be provided 
+* drop box account for today

@@ -1,0 +1,211 @@
+---------------------------
+EEG LAB
+---------------------------
+# onset taking 
+time locked - -200,2000ms epochs <- which events are you epoching related to the event type
+
+### removal of artifacts first, filtering lowpass,highpass <- done
+trial by trial for the classifier
+training 
+feature representation and class label (samples) (trials) 
+export trial by trial data depending on the event (extract the epochs first)
+
+### Epoching the data
+Note: 
+Vectorizing according to channels <- concatenation
+Depending on the channels there are connections with the sculp <- multiple neurons generating the data
+
+data are in .set form 
+load existing data set
+big data for each eeg set
+
+## Hey hey
+srate : sample rate - 500 Hz
+eeg.data = 64*big number
+eeg.event = markers
+
+tools > extract epochs > 
+== time-locking event types (51 58, 101 108, 151 158) Android 161 is missing, so careful to not include it. 
+Robot motion 152,158 
+Android motion 162,168
+Human motion 172,178
+==epoch limits
+-0.2, -2
+==name for the new dataset
+subj02 epochs
+out of bounds eeg limits if any (min max)
+
+.fdt and .set data
+
+baseline latency entry -200 0 
+eeg struct - 3d matrix - 64(channels) 1100(datapoints) 78(trials) labels 
+2200 ms to 1100 <- because of 500Hz 
+Even though we subtracted the data we still have it inside
+collect together (64*1100) <= vectorized based on channels (vertical to horizontal)
+
+78 * 70400 vector in the end <= for each of them 
+
+
+
+
+---------------------------------------------------
+Check the libraries from the email of the professor
+---------------------------------------------------
+Explanation: 
+
+* SVM
+	- transform data to the format of an SVM package 
+		(categorical features)
+	- conduct simple scaling on the data 
+	- consider the RBF kernel K(x,y)= e^(-Gamma(||x-y||)^2)
+	- use cross-validation to find the best parameter C and Gamma(Grid Search)
+	- use the best parameter C and Gamma to train the whole training set
+	- Test
+	
+	Common mistakes:
+	- scaling with different scalers
+	- knowing when to use liblinear (too many features or instances)
+	
+	- data : https://www.csie.ntu.edu.tw/~cjlin/libsvmtools/datasets/
+	
+* scikit-learn library 
+	- negative <= five fold cross validation for estimates
+	- scaling data required
+	- C << 1 if there is noise in the data
+	- L1 penalization
+	- uses libsvm underneath, implemented in c
+
+
+===========================================================
+Migraine and depression papers
+===========================================================
+
+------------------------------------------------------------
+Statistical-ML Related:
+------------------------------------------------------------
+* Parametric Method: Ar-burg method to obtain PowerSpectralDensity: http://thomas-cokelaer.info/software/spectrum/html/user/ref_param.html
+
+* Ar-burg: AR Burg method resolves closely spaced sinusoids signals with low noise levels, and estimates short data records, in which the AR power spectral density estimates are very close to the true values
+
+* Akaike information criterion (AIC) 
+
+* Use PSDs differences to get the classes for SVM
+
+* Feature extraction/ sample reduction 
+	- low-dimensional feature vectors - frequency-magnitude relations
+	* Periodogram method
+	* Fourier Conversion
+	* FFT
+	* AR (auto-regressive) - (Burg or Levinson-Durbin algorithms)
+	* ARMA (auto-regressive moving-average)
+	* MUSIC (multiple signal classification) - PSD related
+	* STFT and wavelet (time-frequency compromise)
+	* zero padding process was performed
+	* Rectangular and Hanning windows
+	
+* ML
+	* Neural Networks to Raw data (Good)
+	* Adaptive Neural Networks to features (Bad)
+	* Logistic Regression
+	* Multilayer perceptron neural network
+-----------------------------------------
+(periodogram,AR,MUSIC)-(PSD)-(LR, MLPNN)
+-----------------------------------------
+
+
+* De-Artifacting: Mourad et al.(2010), Temporally constrained SCA with applications to EEG data.
+* AR( Average reference) and IR (EEG Referencing systems) called also as REST(Reference Electrode Standardization Technique). 
+* EO(eyes opened) or EC(eyes closed) condition. 
+* Statistical quantities: Power spectral densities & Magnitude coherence <- Welch modified pediogram method. 
+
+* ML = (Feature extraction, Feature selection, Classification, Performance evaluation)
+	* Feature Extraction
+		(log power spectral density(PSD), magnitude squared spectral coherence, mutual info between electrode pairs, log ration of left-to-right hemisphere powers and anterior/posterior log power rations, all frequencies of interest ) <= Z-score normalization procedure
+	* Feature selection 
+		Candidate Feature >> useful features, Fisher discriminant ration(FDR), feature polling procedure.
+	* Classification 
+		Mixture of Factor Analysis(MFA - based on maximum likelihood classification rule, allows rank ordering), Monte-Carlo cross validation, Kernelized principal component analysis (KPCA)
+	
+---------------------------------------------------------------------
+EEG related
+---------------------------------------------------------------------
+
+* T5 and T3 channels are used to check migraine in general. 
+* International 10-20 system for placing of electrodes 
+* Increased amplitude of F1 component => steady state visual evoked potential (VEP)
+
+* Frequency bands for EEG
+- delta (0.5-4 Hz) <= epilepsy (low frequency)
+- theta (4-8 Hz)   <= epilepsy (high amplitude)
+- alpha (8-13 Hz)  <= migraine, epilepsy
+- beta (13-30 Hz)  <= migraine
+
+- epilepsy = delta and theta activity (low frequency and high amplitude range)
+
+-----------------------------------------------------------------------
+Migraine related: 
+-----------------------------------------------------------------------
+Incidence of paroxysmal discharges, typical of epileptic syndromes, has been identified. 
+High rates of epileptic EEG activity have been depicted in chronic headache. 
+EEG finding of migraine attacks have verified sequences of spikes or sharp waves in different brain regions, similar to the ictal recording of epilepsy. 
+MIGRAINE: H-response: During headache-free intervals, the most consistent abnormality reported with migraine is a flash driving response at frequencies greater than 20 Hz.
+
+-----------------------------------------------------------------------
+Depression related:
+-----------------------------------------------------------------------
+- The increased variability of anterior EEG asymmetry can be used as a characteristic feature or marker for depression detection from EEG signal. 
+- The effects of drugs include accentuation of beta activity, background slowing with decreased amplitude and frequency of the alpha rhythm, and intermixed theta and delta activity rhythm, and intermixed theta and delta activity.
+
+ 
+==================================================================
+Three Dimension 3D Signal for Electroencephalographic (EEG)
+==================================================================
+
+Preprocessing
+	= threshold (removal of artifacts)
+	= band pass filter ( raw signal into sub bands)
+	= short time fourier transform (stft) (get the EEG spectogram)
+Image processing (produce 3D signal from EEG)
+	= color conversion (gray color)
+	= optimization 
+	= gradient and mesh algorithms (produce 3D signal)
+	
+Signal(time,amplitude,power)
+
+Electroencephalogram (EEG) is one sum of different sinusoids with a fairly wide frequency spectrum which is divided into a differenct frequency bands named delta, theta, alpha and beta bands. 
+These bands, spectral components, represent EEG oscillations and are hypothesized to reflect cyclical variation in the excitability of neuronal assemblies. 
+
+beta  = activity, thinking
+alpha = relax, closed eye
+theta = light sleep, emotional stress
+delta = profound sleep
+
+In this papers there was not much useful information. 
+
+=========================================================================
+Parameters analyzed of Higuchi's fractal dimension for EEG brain signals
+=========================================================================
+
+Fractal Dimension analysis to quantify the irregularity of complexity of brain signals(Higuchi's algorithm) - sensitivity of k parameter due to segmentation, overlap and noise over a signal. 
+Wilcoxon signed-rank test - analysis of statistical differences.
+ 
+Aim 1: Analyze the influence of the overlap, segmentation, different values of theoretical FD over noise data. 
+Aim 2: According to k, compare and analyze statistical differences between different cognitive tasks. 
+
+Surrogate data technique
+
+Higuchi's Algorithm: 
+1. Construct new time series
+2. Calculate length of each new curve of time series
+3. Calculate mean length of each curve
+4. Check if curve is fractal with dimension FD. 
+
+===========================================================
+EEG alpha oscillations: The inhibition-timing hypothesis.
+===========================================================
+
+1. ERD (Event related desynchronization) - release of inhibition associated with the emergence of complex spreading activation processes.
+2. ERS (Event related synchronization) - withhold or control the execution of a response (top-down inhibitory control) - timing of cortical processing
+
+Oscillations reflect rhythmic changes in the relative level of depolarization in the membrane potentials of masses of neurons. 
+

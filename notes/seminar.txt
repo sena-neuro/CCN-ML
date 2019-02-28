@@ -1,0 +1,20 @@
+What are the regulatory mechanisms? How would the distinction between synapses that should stop working and synapses that should not stop working be done? Is it related to the usage of these synapses? How?
+
+Closure ratio - regulation of proteins 
+Inhibitory problem with syncam1 - responses when removing syncam1 - visual acuity 
+Specialized vision with the existence of the proteins in the place
+No orientation selectivity
+
+Binocular vision has problems with depth perception
+Results of the critical period with syncam1 mouse
+Thalamic connections are problematic
+Synapses driving the neutralization
+Thalamic input, prevalumin provides inhibition
+Feed forward inhibition is immature in the absence of SynCAM1 
+
+What is the interaction between neurons when keeping synapses?
+Why the fuck?
+Why do you think is based on one neuron and not in groups of neurons?
+Proteins working together to create an environment?
+
+Manipulation after the critical period 
