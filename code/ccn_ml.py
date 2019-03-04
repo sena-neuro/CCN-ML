@@ -50,9 +50,9 @@ def improved_svm(X_train, y_train, X_test, y_test, multiclass = False):
         grid_search.fit(X_train, y_train)
         # to choose best params can use also the method: svc_param_selection()
         #print("    Best parameters: ",grid_search.best_params_)
-        svm_model_linear = SVC(grid_search.best_params_).fit(x_train, y_train) 
-        svm_predictions = svm_model_linear.predict(x_test)    
-        accuracy = svm_model_linear.score(x_test, y_test) 
+        svm_model_linear = SVC(grid_search.best_params_).fit(X_train, y_train) 
+        svm_predictions = svm_model_linear.predict(X_test)    
+        accuracy = svm_model_linear.score(X_test, y_test) 
         return accuracy
     except Exception:
         print("    Something went wrong! improved_svm() method did not work!\n")

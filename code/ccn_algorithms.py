@@ -25,7 +25,7 @@ def create_windowed_data(filenames,
             # read the contents
             content    = ccn_io.read_file(filename)
             class_type = list(content.keys())[-1] + ''
-            data_x     = np.asarray(content[class_type])[ channels_start : channels_end, timeframe_start : timeframe_end,  trials_start : trials_end]
+            data_x     = np.asarray(content[class_type])
             vector     = []
             window_frame = timeframe_start
 
@@ -56,7 +56,7 @@ def create_windowed_data(filenames,
                     window_frame += step
 
                 # keep the while loop running for next run of for loop
-                window_frame = 0
+                window_frame = timeframe_start
         #print("Windowed Data Created!")
         return x,y
 
@@ -85,7 +85,7 @@ def create_singly_windowed(filenames,
             # read the contents
             content    = ccn_io.read_file(filename)
             class_type = list(content.keys())[-1] + ''
-            data_x     = np.asarray(content[class_type])[ channels_start : channels_end, timeframe_start : timeframe_end,  trials_start : trials_end]
+            data_x     = np.asarray(content[class_type])
             vector     = []
             window_frame = timeframe_start
 
@@ -117,7 +117,7 @@ def create_singly_windowed(filenames,
                     window_frame += step
 
                 # keep the while loop running for next run of for loop
-                window_frame = 0
+                window_frame = timeframe_start
         #print("Windowed Data Created!")
         return x,y
 
