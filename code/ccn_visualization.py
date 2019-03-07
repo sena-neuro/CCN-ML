@@ -8,6 +8,7 @@ def plot(x,y):
 	"""
 	try: 
 		plt.plot(x,y)
+		plt.show()
 	except Exception: 
 		print("    Something went wrong! plot method did not work!\n")
 

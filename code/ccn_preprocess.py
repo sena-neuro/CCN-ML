@@ -27,29 +27,26 @@ def preprocess(x,y,train_test=True, scaler = True, transform= False):
     1. MinMax Scaler
     2. Simple Transformer
     3. Train test split
-    """
-    try: 
-    	# !!!! IMPORTANT FOR SVM 
-        if (scaler):
-            scaler = MinMaxScaler(feature_range=(-1,1)) # Standard scaler too 
-            scaler.fit(x)
-            x = scaler.transform(x)
-            
-        # simple transformation which takes out the average
-        if transform:
-            data_mean = np.average(x)
-            data_std = np.std(x)
-            x = (x - data_mean)/data_std
-            
-        if train_test:
-            x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.20, random_state=42)
-            return x_train, x_test, y_train, y_test
-            
-        else:
-            return x,y
-    except Exception: 
-        ## Changed this try-except because it slows the code down from 3 checks to 1 check
-        print("    Something went wrong! Preprocessing did not work!\n")
+"""
+	# !!!! IMPORTANT FOR SVM 
+    if (scaler):
+        scaler = MinMaxScaler(feature_range=(-1,1)) # Standard scaler too 
+        scaler.fit(x)
+        x = scaler.transform(x)
+        
+    # simple transformation which takes out the average
+    if transform:
+        data_mean = np.average(x)
+        data_std = np.std(x)
+        x = (x - data_mean)/data_std
+        
+    if train_test:
+        x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.20, random_state=42)
+        return x_train, x_test, y_train, y_test
+        
+    else:
+        return x,y
+
         
 
 # functions for Normalization

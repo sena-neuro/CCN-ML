@@ -14,6 +14,8 @@ import sklearn.metrics as metrics
 from sklearn.svm import SVC
 from sklearn.model_selection import GridSearchCV
 from sklearn.linear_model  import LogisticRegression
+from sklearn.metrics import classification_report, confusion_matrix  
+
 #from keras.models import Sequential
 #from keras.layers import Dense, Dropout
 #from keras.callbacks import ModelCheckpoint
@@ -22,17 +24,12 @@ from sklearn.linear_model  import LogisticRegression
 #---------------------------------------------------------------------------------
 # useful for now
 def simple_svm(x_train,y_train, x_test, y_test):
-	try:
-		svm_model_linear = SVC(kernel = 'linear', gamma='auto').fit(x_train, y_train) 
-		y_pred   = svm_model_linear.predict(x_test)    
-		accuracy = svm_model_linear.score(x_test, y_test) 
-		from sklearn.metrics import classification_report, confusion_matrix  
-		print(confusion_matrix(y_test,y_pred))  
-		print(classification_report(y_test,y_pred)) 
-		return accuracy
-	except Exception: 
-		print("    Something went wrong! simple_svm() method did not work!\n")
-
+	svm_model_linear = SVC(kernel = 'linear', gamma='auto').fit(x_train, y_train) 
+	y_pred   = svm_model_linear.predict(x_test)    
+	accuracy = svm_model_linear.score(x_test, y_test) 
+	#print(confusion_matrix(y_test,y_pred))  
+	#print(classification_report(y_test,y_pred)) 
+	return accuracy
 
 # to be used later
 # more complicated but more useful
@@ -41,21 +38,19 @@ def improved_svm(X_train, y_train, X_test, y_test, multiclass = False):
         Create the parameter grid and fit the information with the best model. 
         Return the parameters so that the usage of them will be easier.
     """
-    try: 
-        param_grid = [
-          {'C': [0.1,0.7,0.8,0.9,1], 'kernel': ['linear']},
-          {'C': [0.9,1, 1.1], 'gamma': [0.001, 0.0001], 'kernel': ['rbf']}
-         ]
-        grid_search = GridSearchCV(SVC(), param_grid, cv = 2)
-        grid_search.fit(X_train, y_train)
-        # to choose best params can use also the method: svc_param_selection()
-        #print("    Best parameters: ",grid_search.best_params_)
-        svm_model_linear = SVC(grid_search.best_params_).fit(X_train, y_train) 
-        svm_predictions = svm_model_linear.predict(X_test)    
-        accuracy = svm_model_linear.score(X_test, y_test) 
-        return accuracy
-    except Exception:
-        print("    Something went wrong! improved_svm() method did not work!\n")
+
+    param_grid = [
+      {'C': [0.001, 0.01, 0.1, 1, 10], 'kernel': ['linear']},
+      {'C': [0.001, 0.01, 0.1, 1, 10], 'gamma': ["scale"], 'kernel': ['rbf']}
+     ]
+    grid_search = GridSearchCV(SVC(), param_grid, cv = 5)
+    grid_search.fit(X_train, y_train)
+    # to choose best params can use also the method: svc_param_selection()
+    #print("    Best parameters: ",grid_search.best_params_)
+    svm_model_linear = SVC(**grid_search.best_params_).fit(X_train, y_train) 
+    svm_predictions = svm_model_linear.predict(X_test)    
+    accuracy = svm_model_linear.score(X_test, y_test) 
+    return accuracy
 
 # NOT USED
 def svc_param_selection(X, y, nfolds):
