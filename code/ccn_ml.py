@@ -13,49 +13,83 @@
 import sklearn.metrics as metrics
 from sklearn.svm import SVC
 from sklearn.model_selection import GridSearchCV
-from sklearn.linear_model  import LogisticRegression
-#from keras.models import Sequential
-#from keras.layers import Dense, Dropout
-#from keras.callbacks import ModelCheckpoint
+from sklearn.linear_model import LogisticRegression
+import numpy as np
+
+
+# from keras.models import Sequential
+# from keras.layers import Dense, Dropout
+# from keras.callbacks import ModelCheckpoint
 
 # SVM 
-#---------------------------------------------------------------------------------
+# ---------------------------------------------------------------------------------
 # useful for now
-def simple_svm(x_train,y_train, x_test, y_test):
-	try:
-		svm_model_linear = SVC(kernel = 'linear', gamma='auto').fit(x_train, y_train) 
-		y_pred   = svm_model_linear.predict(x_test)    
-		accuracy = svm_model_linear.score(x_test, y_test) 
-		from sklearn.metrics import classification_report, confusion_matrix  
-		print(confusion_matrix(y_test,y_pred))  
-		print(classification_report(y_test,y_pred)) 
-		return accuracy
-	except Exception: 
-		print("    Something went wrong! simple_svm() method did not work!\n")
+def simple_svm(x_train, y_train, x_test, y_test):
+    try:
+        svm_model_linear = SVC(kernel='linear', gamma='auto').fit(x_train, y_train)
+        y_pred = svm_model_linear.predict(x_test)
+        accuracy = svm_model_linear.score(x_test, y_test)
+        from sklearn.metrics import classification_report, confusion_matrix
+        print(confusion_matrix(y_test, y_pred))
+        print(classification_report(y_test, y_pred))
+        return accuracy
+    except Exception:
+        print("    Something went wrong! simple_svm() method did not work!\n")
 
 
+def sena_svc(X_train, y_train, X_test, y_test):
+    svc = GridSearchCV(SVC(kernel='rbf'), cv=5,
+                       param_grid={"C": np.logspace(-5, 15, base=2, num=10),
+                                   "gamma": np.logspace(-15, 3, base=2, num=10)})
+    svc.fit(X_train, y_train)
+
+    print("Best parameters set found on development set:")
+    print()
+    print(svc.best_params_)
+    print()
+    print("Grid scores on development set:")
+    print()
+    means = svc.cv_results_['mean_test_score']
+    stds = svc.cv_results_['std_test_score']
+    for mean, std, params in zip(means, stds, svc.cv_results_['params']):
+        print("%0.3f (+/-%0.03f) for %r"
+              % (mean, std * 2, params))
+    print()
+
+    print("Detailed classification report:")
+    print()
+    print("The model is trained on the full development set.")
+    print("The scores are computed on the full evaluation set.")
+    print()
+    y_true, y_pred = y_test, svc.predict(X_test)
+    print(metrics.classification_report(y_true, y_pred))
+    print()
+
+    accuracy = svc.score(X_test, y_test)
+    return accuracy
+
+'''
 # to be used later
 # more complicated but more useful
-def improved_svm(X_train, y_train, X_test, y_test, multiclass = False):
+def improved_svm(X_train, y_train, X_test, y_test):
     """
         Create the parameter grid and fit the information with the best model. 
         Return the parameters so that the usage of them will be easier.
     """
-    try: 
-        param_grid = [
-          {'C': [0.1,0.7,0.8,0.9,1], 'kernel': ['linear']},
-          {'C': [0.9,1, 1.1], 'gamma': [0.001, 0.0001], 'kernel': ['rbf']}
-         ]
-        grid_search = GridSearchCV(SVC(), param_grid, cv = 2)
-        grid_search.fit(X_train, y_train)
-        # to choose best params can use also the method: svc_param_selection()
-        #print("    Best parameters: ",grid_search.best_params_)
-        svm_model_linear = SVC(grid_search.best_params_).fit(X_train, y_train) 
-        svm_predictions = svm_model_linear.predict(X_test)    
-        accuracy = svm_model_linear.score(X_test, y_test) 
-        return accuracy
-    except Exception:
-        print("    Something went wrong! improved_svm() method did not work!\n")
+    param_grid = [
+        {'C': [0.1, 0.7, 0.8, 0.9, 1], 'kernel': ['linear']},
+        {'C': [0.9, 1, 1.1], 'gamma': [0.001, 0.0001], 'kernel': ['rbf']}
+    ]
+    grid_search = GridSearchCV(SVC(), param_grid, cv=5)
+    grid_search.fit(X_train, y_train)
+    # to choose best params can use also the method: svc_param_selection()
+    # print("    Best parameters: ",grid_search.best_params_)
+    svm_model_linear = SVC(**grid_search.best_params_).fit(X_train, y_train)
+    svm_predictions = svm_model_linear.predict(X_test)
+    accuracy = svm_model_linear.score(X_test, y_test)
+    return accuracy
+
+
 
 # NOT USED
 def svc_param_selection(X, y, nfolds):
@@ -66,30 +100,32 @@ def svc_param_selection(X, y, nfolds):
     """
     Cs = [0.001, 0.01, 0.1, 1, 10]
     gammas = [0.001, 0.01, 0.1, 1]
-    param_grid = {'C': Cs, 'gamma' : gammas}
+    param_grid = {'C': Cs, 'gamma': gammas}
     grid_search = GridSearchCV(SVC(kernel='rbf'), param_grid, cv=nfolds)
     grid_search.fit(X, y)
     grid_search.predict()
     grid_search.best_params_
     return grid_search.best_params_
 
+
 # Logistic Regression method
-#---------------------------------------------------------------------------------
+# ---------------------------------------------------------------------------------
 def logistic_reg(X_train1, y_train1, X_test1, y_test1):
     """
         Use this statistical method to find a classifier. 
     """
-    try: 
-        clf_D = LogisticRegression(solver='liblinear')
-        clf_D.fit(X_train1, y_train1)
-        predict = clf_D.predict(X_test1)
-        score = [metrics.accuracy_score(y_test1, predict), metrics.precision_score(y_test1, predict),metrics.recall_score(y_test1, predict),metrics.f1_score(y_test1, predict)]
+    try:
+        svc_D = LogisticRegression(solver='liblinear')
+        svc_D.fit(X_train1, y_train1)
+        predict = svc_D.predict(X_test1)
+        score = [metrics.accuracy_score(y_test1, predict), metrics.precision_score(y_test1, predict),
+                 metrics.recall_score(y_test1, predict), metrics.f1_score(y_test1, predict)]
         return score
-    except Exception: 
+    except Exception:
         print("    Something went wrong! improved_svm() method did not work!\n")
-        
 
-'''
+
+
 #-------------------------------------------------------
 # Neural Network - Not finished 
 # tensorflow to be added.
@@ -136,28 +172,27 @@ def improved_NN(x_train, x_test, y_train, y_test):
     return
 '''
 
-
-#------------------------------------
+# ------------------------------------
 # testing
 
 if __name__ == "__main__":
-    x_train = [[1,0,1,0,1],[0,1,0,1,0],[1,0,1,0,1],[0,1,0,1,0],
-    		   [1,0,1,0,1],[0,1,0,1,0],[1,0,1,0,1],[0,1,0,1,0]]
-    x_test  = [[1,0,1,0,1],[1,0,1,0,1]]
-    y_train = [1,0,1,0,1,0,1,0]
-    y_test  = [1,1]
-    
+    x_train = [[1, 0, 1, 0, 1], [0, 1, 0, 1, 0], [1, 0, 1, 0, 1], [0, 1, 0, 1, 0],
+               [1, 0, 1, 0, 1], [0, 1, 0, 1, 0], [1, 0, 1, 0, 1], [0, 1, 0, 1, 0]]
+    x_test = [[1, 0, 1, 0, 1], [1, 0, 1, 0, 1]]
+    y_train = [1, 0, 1, 0, 1, 0, 1, 0]
+    y_test = [1, 1]
+
     print("Trying simple_svm()!\n")
-    content = simple_svm(x_train,y_train, x_test, y_test)
+    content = simple_svm(x_train, y_train, x_test, y_test)
     if content != None:
         print("    simple_svm() works.\n")
-        
+
     print("Trying improved_svm()!\n")
-    content = improved_svm(x_train,y_train, x_test, y_test)
+    content = improved_svm(x_train, y_train, x_test, y_test)
     if content != None:
         print("    improved_svm() works.\n")
-    
+
     print("Trying logistic_reg()!\n")
-    content = logistic_reg(x_train,y_train, x_test, y_test)
+    content = logistic_reg(x_train, y_train, x_test, y_test)
     if content != None:
         print("    logistic_reg() works.\n")
