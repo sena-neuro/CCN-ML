@@ -1,7 +1,4 @@
 import numpy as np
-import pandas as pd
-import scipy.io as sio
-import itertools
 import ccn_io
 
 # useful! Contains 3 for loops inside: files, trials, window_frames

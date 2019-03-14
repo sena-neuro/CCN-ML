@@ -13,7 +13,6 @@
 import sklearn.metrics as metrics
 from sklearn.svm import SVC
 from sklearn.model_selection import GridSearchCV
-from sklearn.linear_model import LogisticRegression
 import numpy as np
 
 
@@ -21,47 +20,51 @@ import numpy as np
 # from keras.layers import Dense, Dropout
 # from keras.callbacks import ModelCheckpoint
 
-# SVM 
-#---------------------------------------------------------------------------------
-# useful for now
-def simple_svm(x_train,y_train, x_test, y_test):
-	svm_model_linear = SVC(kernel = 'linear', gamma='auto').fit(x_train, y_train)
-	y_pred   = svm_model_linear.predict(x_test)
-	accuracy = svm_model_linear.score(x_test, y_test)
-	#print(confusion_matrix(y_test,y_pred))
-	#print(classification_report(y_test,y_pred))
-	return accuracy
 
-def sena_svc(X_train, y_train, X_test, y_test):
-    svc = GridSearchCV(SVC(kernel='rbf'), cv=5,
-                       param_grid={"C": np.logspace(-5, 15, base=2, num=10),
-                                   "gamma": np.logspace(-15, 3, base=2, num=10)})
-    svc.fit(X_train, y_train)
+def svc(x_train, y_train, x_test, y_test, gridsearch=True, verbose=False, kernel='rbf',
+        gamma_grid=np.logspace(-15, 3, base=2, num=10), c_grid=np.logspace(-5, 15, base=2, num=10)):
 
-    print("Best parameters set found on development set:")
-    print()
-    print(svc.best_params_)
-    print()
-    print("Grid scores on development set:")
-    print()
-    means = svc.cv_results_['mean_test_score']
-    stds = svc.cv_results_['std_test_score']
-    for mean, std, params in zip(means, stds, svc.cv_results_['params']):
-        print("%0.3f (+/-%0.03f) for %r"
-              % (mean, std * 2, params))
-    print()
+    # coef grid, others?
+    if gridsearch:
+        svc = SVC(kernel=kernel)  # check
+        if kernel == 'rbf':
+            svc = GridSearchCV(svc, cv=5,
+                               param_grid={"C": c_grid,
+                                           "gamma": gamma_grid})
+        else:
+            print("Gridsearch for degree and coef is not implemented, only the optimal gamma value will be searched")
+            svc = GridSearchCV(svc, cv=5,
+                               param_grid={"gamma": gamma_grid})
+        if verbose:
+            print("Best parameters set found on development set:")
+            print()
+            print(svc.best_params_)
+            print()
+            print("Grid scores on development set:")
+            print()
+            means = svc.cv_results_['mean_test_score']
 
-    print("Detailed classification report:")
-    print()
-    print("The model is trained on the full development set.")
-    print("The scores are computed on the full evaluation set.")
-    print()
-    y_true, y_pred = y_test, svc.predict(X_test)
-    print(metrics.classification_report(y_true, y_pred))
-    print()
+            stds = svc.cv_results_['std_test_score']
+            for mean, std, params in zip(means, stds, svc.cv_results_['params']):
+                print("%0.3f (+/-%0.03f) for %r"
+                      % (mean, std * 2, params))
+            print()
+    else:
+        svc = SVC(kernel=kernel)
+    svc.fit(x_train, y_train)
+    if verbose:
+        print("Detailed classification report:")
+        print()
+        print("The model is trained on the full development set.")
+        print("The scores are computed on the full evaluation set.")
+        print()
+        y_true, y_pred = y_test, svc.predict(x_test)
+        print(metrics.classification_report(y_true, y_pred))
+        print()
 
-    accuracy = svc.score(X_test, y_test)
+    accuracy = svc.score(x_test, y_test)
     return accuracy
+
 
 '''
 # to be used later
