@@ -35,7 +35,9 @@ def svc(x_train, y_train, x_test, y_test, gridsearch=True, verbose=False, kernel
             print("Gridsearch for degree and coef is not implemented, only the optimal gamma value will be searched")
             svc = GridSearchCV(svc, cv=5,
                                param_grid={"gamma": gamma_grid})
+        svc.fit(x_train, y_train)
         if verbose:
+            print("kernel: ", kernel)
             print("Best parameters set found on development set:")
             print()
             print(svc.best_params_)
@@ -50,8 +52,8 @@ def svc(x_train, y_train, x_test, y_test, gridsearch=True, verbose=False, kernel
                       % (mean, std * 2, params))
             print()
     else:
-        svc = SVC(kernel=kernel)
-    svc.fit(x_train, y_train)
+        svc = SVC(kernel=kernel,gamma='scale')
+        svc.fit(x_train, y_train)
     if verbose:
         print("Detailed classification report:")
         print()
