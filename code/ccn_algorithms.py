@@ -36,8 +36,7 @@ def create_windowed_data(filenames,
         if channels_end > len(data_x):
             raise Exception("More channels are requested than in the data")
         elif trials_end > len(data_x[0][0]):
-            print( len(data_x[0][0]))
-            raise Exception("More trials requested than in the data")
+            trials_end=len(data_x[0][0])
 
         # get all the information for each of the trials
         for trial in range(trials_start, trials_end):
