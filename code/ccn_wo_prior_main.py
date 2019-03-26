@@ -54,19 +54,23 @@ def main():
                       help='Perform gridsearch')
   parser.add_argument('-v','--verbose',default=False,action="store_true",
                       help='Give useful information for debugging')
+  parser.add_argument('save_path', metavar='output path', type=str, default='', 
+  					  help='Path to save the results of the experiment' )
   dataFileList = [["data2/s02_video_android", "data2/s02_video_human", "data2/s02_video_robot"]]
 
   args = parser.parse_args()
 
   print('(2) Data is sliced into 100 ms windows, shifted by 50 ms (0-100, 50-150, ...)')
-  for subjFileList in dataFileList:
+  for subjectNo, subjFileList in enumerate(dataFileList):
     acc,time_ranges=generalized_pipeline(subjFileList, start=0, end=400, window_size=args.w_size, window_shift=args.shift,
                                         gridsearch=args.gridsearch, verbose=args.verbose)
+    plt.plot(time_ranges,acc)
+    plt.savefig(args.save_path+'/'+str(args)+'s'+str(subjectNo)+'_accuracy.png',bbox_inches='tight')
     acc_mat.append(acc) 
 
   acc_mat = np.array(acc_mat)
   avg_accuracies = np.mean(acc_mat, axis=0)
   plt.plot(time_ranges,avg_accuracies)
-  plt.savefig(str(args)+'_accuracy.png',bbox_inches='tight')
+  plt.savefig(args.save_path+'/'+str(args)+'_accuracy.png',bbox_inches='tight')
 if __name__ == '__main__':
   main()
