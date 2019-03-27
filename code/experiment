@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+
+# for i in /data2/s*.mat
+
+Exps=('E100w100s' 'E100w50s' 'E100w25s' 'E50w50s' 'E50w25s' 'E25w25s' 'E1w1s')
+
+declare -A params
+
+params["E100w100s"]="100 100"
+params["E100w50s"]="100 50"
+params["E100w25s"]="100 25"
+params["E50w50s"]="50 50"
+params["E50w25s"]="50 25"
+params["E25w25s"]="25 25"
+params["E1w1s"]="1 1"
+
+for i in "${Exps[@]}"; do
+	echo Experiment $i is started
+	path="./Experiments/$i"
+	mkdir -p  $path
+	python ccn_wo_prior_main.py ${params[$i]} $path 
+	echo Done 
+done
