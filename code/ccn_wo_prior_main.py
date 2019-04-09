@@ -5,6 +5,8 @@ import sys
 import numpy as np
 import matplotlib.pyplot as plt
 import argparse
+import os
+
 
 # Generalized Pipeline
 # Currently, only SVC is available.
@@ -55,22 +57,41 @@ def main():
   parser.add_argument('-v','--verbose',default=False,action="store_true",
                       help='Give useful information for debugging')
   parser.add_argument('save_path', metavar='output path', type=str, default='', 
-  					  help='Path to save the results of the experiment' )
-  dataFileList = [["data2/s02_video_android", "data2/s02_video_human", "data2/s02_video_robot"]]
+  					          help='Path to save the results of the experiment' )
+  parser.add_argument('user', metavar='user', type=str, default='', 
+                      help='In whos server oelmas or ser' )
+  svpth = '/auto/data2/' + user +'/EEG_AgentPerception_NAIVE/Analysis/'
+  dataFileList = []
+  subjFileList = []
+  pth = '/auto/data2/' + user +'/EEG_AgentPerception_NAIVE/Data/'
+  print(pth)
+  folders =  [name for name in os.listdir(pth) if os.path.isdir(pth+name)]
+  for folder in folders:
+    file_pth = pth + folder+'/'
+    files = [name for name in os.listdir(file_pth)]
+    for file in files:
+      if('.mat' in file):
+        print("file path: ", file_pth + file)
+        subjFileList.append(file_pth + file)
+    dataFileList.append(subjFileList)
+    subjFileList = []
+
+  print(dataFileList)
+  #dataFileList = [["data2/s02_video_android", "data2/s02_video_human", "data2/s02_video_robot"]]
 
   args = parser.parse_args()
-
+  
   print('(2) Data is sliced into 100 ms windows, shifted by 50 ms (0-100, 50-150, ...)')
   for subjectNo, subjFileList in enumerate(dataFileList):
     acc,time_ranges=generalized_pipeline(subjFileList, start=0, end=400, window_size=args.w_size, window_shift=args.shift,
                                         gridsearch=args.gridsearch, verbose=args.verbose)
     plt.plot(time_ranges,acc)
-    plt.savefig(args.save_path+'/'+str(args)+'s'+str(subjectNo)+'_accuracy.png',bbox_inches='tight')
+    plt.savefig(svpt+args.save_path+'/'+str(args)+'s'+str(subjectNo)+'_accuracy.png',bbox_inches='tight')
     acc_mat.append(acc) 
 
   acc_mat = np.array(acc_mat)
   avg_accuracies = np.mean(acc_mat, axis=0)
   plt.plot(time_ranges,avg_accuracies)
-  plt.savefig(args.save_path+'/'+str(args)+'_accuracy.png',bbox_inches='tight')
+  plt.savefig(svpth+args.save_path+'/'+str(args)+'_accuracy.png',bbox_inches='tight')
 if __name__ == '__main__':
   main()

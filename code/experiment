@@ -16,7 +16,7 @@ params["E1w1s"]="1 1"
 
 for i in "${Exps[@]}"; do
 	echo Experiment $i is started
-	path="./Experiments/$i"
+	path="/Experiments/$i"
 	mkdir -p  $path
 	python ccn_wo_prior_main.py ${params[$i]} $path 
 	echo Done 
