@@ -8,18 +8,10 @@
     * Classification
     Mixture of Factor Analysis(MFA - based on maximum likelihood classification rule, allows rank ordering), Monte-Carlo cross validation, Kernelized principal component analysis (KPCA)
 """
-
-# svm is implemented using libsvm
 import sklearn.metrics as metrics
 from sklearn.svm import SVC
 from sklearn.model_selection import GridSearchCV
 import numpy as np
-
-
-# from keras.models import Sequential
-# from keras.layers import Dense, Dropout
-# from keras.callbacks import ModelCheckpoint
-
 
 def svc(x_train, y_train, x_test, y_test, gridsearch=True, verbose=False, kernel='rbf',
         gamma_grid=np.logspace(-15, 3, base=2, num=10), c_grid=np.logspace(-5, 15, base=2, num=10)):
@@ -52,7 +44,7 @@ def svc(x_train, y_train, x_test, y_test, gridsearch=True, verbose=False, kernel
                       % (mean, std * 2, params))
             print()
     else:
-        svc = SVC(kernel=kernel,gamma='scale')
+        svc = SVC(kernel=kernel, gamma='scale')
         svc.fit(x_train, y_train)
     if verbose:
         print("Detailed classification report:")

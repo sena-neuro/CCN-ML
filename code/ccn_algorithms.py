@@ -1,5 +1,6 @@
 import numpy as np
-import ccn_io
+import scipy.io as sio
+
 
 # useful! Contains 3 for loops inside: files, trials, window_frames
 def create_windowed_data(filenames,
@@ -18,21 +19,22 @@ def create_windowed_data(filenames,
     for filename in filenames:
 
         # read the contents
-        content    = ccn_io.read_file(filename)
+        content    = sio.loadmat(filename)
         class_type = list(content.keys())[-1] + ''
         data_x     = np.asarray(content[class_type])
         vector     = []
         wind_start = timeframe_start
         label = None
-        if class_type.find('human') >= 0:
+        if filename.find('human') >= 0:
             label = 0
-        elif class_type.find('android') >= 0:
+        elif filename.find('android') >= 0:
             label = 1
-        elif class_type.find('robot') >= 0:
+        elif filename.find('robot') >= 0:
             label = 2
         else:
              raise Exception("Couldn't find a label")
-
+        if trials_end == "end":
+            trials_end = data_x.shape[2]
         if channels_end > len(data_x):
             raise Exception("More channels are requested than in the data")
         elif trials_end > len(data_x[0][0]):
@@ -45,7 +47,7 @@ def create_windowed_data(filenames,
 
                 # select the part of data you want, 2d array to 1D with attachment one after the other. 
 
-                vector = data_x[channels_start:channels_end, wind_start: wind_start + size, trial]
+                vector = data_x[channels_start:channels_end, wind_start: wind_start + size, trial] # TODO: only allows a range allow for specific values too
 
                 vector = vector.flatten()
 
