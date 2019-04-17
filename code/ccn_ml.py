@@ -20,12 +20,12 @@ def svc(x_train, y_train, x_test, y_test, gridsearch=True, verbose=False, kernel
     if gridsearch:
         svc = SVC(kernel=kernel)  # check
         if kernel == 'rbf':
-            svc = GridSearchCV(svc, cv=5,
+            svc = GridSearchCV(svc, cv=5,n_jobs=-1,
                                param_grid={"C": c_grid,
                                            "gamma": gamma_grid})
         else:
             print("Gridsearch for degree and coef is not implemented, only the optimal gamma value will be searched")
-            svc = GridSearchCV(svc, cv=5,
+            svc = GridSearchCV(svc, cv=5,n_jobs=-1,
                                param_grid={"gamma": gamma_grid})
         svc.fit(x_train, y_train)
         if verbose:
