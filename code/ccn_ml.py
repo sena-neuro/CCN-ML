@@ -44,7 +44,7 @@ def svc(x_train, y_train, x_test, y_test, gridsearch=True, verbose=False, kernel
                       % (mean, std * 2, params))
             print()
     else:
-        svc = SVC(kernel=kernel, gamma='scale')
+        svc = SVC(kernel=kernel)
         svc.fit(x_train, y_train)
     if verbose:
         print("Detailed classification report:")

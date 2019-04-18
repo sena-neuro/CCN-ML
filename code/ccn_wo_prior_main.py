@@ -65,6 +65,7 @@ def main():
     dataFileList = []
     subjFileList = []
     folders = [name for name in os.listdir(args.in_path) if os.path.isdir(args.in_path + name)]
+    subjList = [name[0:6] for name in folders]
     for folder in folders:
         file_pth = args.in_path + folder + '/'
         files = [name for name in os.listdir(file_pth)]
@@ -83,22 +84,24 @@ def main():
         acc, time_ranges = generalized_pipeline(subjFileList, start=0, end=400, window_size=args.w_size,
                                                 window_shift=args.shift,
                                                 gridsearch=args.gridsearch, verbose=args.verbose)
-        results_dict[str(subjectNo)+'_results'] = acc
+        print(subjFileList)
+        subj_acc_dict = {str((range_start, range_start+ args.w_size)): acc[i] for i, range_start in enumerate(time_ranges)}
+        results_dict[subjList[subjectNo]+'_results'] = subj_acc_dict
         plt.plot(time_ranges, acc)
-        plt.savefig(args.save_path+ 's' + str(subjectNo+1) + '_accuracy.png',
+        plt.savefig(args.save_path + subjList[subjectNo] + '_accuracy.png',
                     bbox_inches='tight')
         plt.clf()
         plt.close()
         acc_mat.append(acc)
 
     acc_mat = np.array(acc_mat)
-    avg_accuracies = np.mean(acc_mat, axis=0)
-    results_dict['avg_all'] = list(avg_accuracies)
+    avg_accuracies = list(np.mean(acc_mat, axis=0))
+    results_dict['avg_all'] = {str((range_start,range_start+ args.w_size)): avg_accuracies[i] for i, range_start in enumerate(time_ranges)}
     plt.plot(time_ranges, avg_accuracies)
-    plt.savefig(args.save_path + '_accuracy.png', bbox_inches='tight')
+    plt.savefig(args.save_path + 'avg_accuracy.png', bbox_inches='tight')
     plt.clf()
     plt.close()
-    filename = args.save_path + '_accuracy_results'
+    filename = args.save_path + 'accuracy_results.json'
     with open(filename, 'w') as f:
         json.dump(results_dict, f)
 
