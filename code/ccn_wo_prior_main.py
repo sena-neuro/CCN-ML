@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import ccn_preprocess
 import ccn_algorithms
 import ccn_ml
@@ -24,7 +26,8 @@ def generalized_pipeline(subjFileList, start=0, end=400, method='svc', gridsearc
             x, y = ccn_algorithms.create_windowed_data(subjFileList, 0,
                                                        timeframe_start=time, timeframe_end=time + window_size,
                                                        size=window_size,
-                                                       trials_end="end")
+                                                       trials_end=50)
+
             x_train, x_test, y_train, y_test = ccn_preprocess.preprocess(x, y, method="StandardScaler")
             if verbose:
                 print("all data: ", len(x))
@@ -65,34 +68,43 @@ def main():
     dataFileList = []
     subjFileList = []
     folders = [name for name in os.listdir(args.in_path) if os.path.isdir(args.in_path + name)]
+    """
+    print(folders)
+    print(subjList)
     subjList = [name[0:6] for name in folders]
     for folder in folders:
         file_pth = args.in_path + folder + '/'
         files = [name for name in os.listdir(file_pth)]
+        print("FILEs_____________________{}".format(file_pth))
+        print("FILEs_____________________{}".format(files))
         for file in files:
+            
             if file.endswith('.mat' ):
                 subjFileList.append(file_pth + file)
         dataFileList.append(subjFileList)
         subjFileList = []
-
+    
     assert args.shift <= args.w_size
     if args.shift == 0:
         args.shift = args.w_size
 
     print('(2) Data is sliced into 100 ms windows, shifted by 50 ms (0-100, 50-150, ...)')
     for subjectNo, subjFileList in enumerate(dataFileList):
-        acc, time_ranges = generalized_pipeline(subjFileList, start=0, end=400, window_size=args.w_size,
-                                                window_shift=args.shift,
-                                                gridsearch=args.gridsearch, verbose=args.verbose)
-        print(subjFileList)
-        subj_acc_dict = {str((range_start, range_start+ args.w_size)): acc[i] for i, range_start in enumerate(time_ranges)}
-        results_dict[subjList[subjectNo]+'_results'] = subj_acc_dict
-        plt.plot(time_ranges, acc)
-        plt.savefig(args.save_path + subjList[subjectNo] + '_accuracy.png',
-                    bbox_inches='tight')
-        plt.clf()
-        plt.close()
-        acc_mat.append(acc)
+    """
+    subjFileList = ["data/android_motion_epochs.mat","data/human_motion_epochs.mat","data/robot_motion_epochs.mat"]
+    
+    acc, time_ranges = generalized_pipeline(subjFileList, start=100, end=400, window_size=args.w_size,
+                                            window_shift=args.shift,
+                                            gridsearch=args.gridsearch, verbose=args.verbose)
+    print(subjFileList)
+    subj_acc_dict = {str((range_start, range_start+ args.w_size)): acc[i] for i, range_start in enumerate(time_ranges)}
+    results_dict[subjList[subjectNo]+'_results'] = subj_acc_dict
+    plt.plot(time_ranges, acc)
+    plt.savefig(args.save_path + subjList[subjectNo] + '_accuracy.png',
+                bbox_inches='tight')
+    plt.clf()
+    plt.close()
+    acc_mat.append(acc)
 
     acc_mat = np.array(acc_mat)
     avg_accuracies = list(np.mean(acc_mat, axis=0))

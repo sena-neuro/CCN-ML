@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import scipy.io as sio
 import mne
 import numpy as np

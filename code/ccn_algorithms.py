@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import numpy as np
 import scipy.io as sio
 
@@ -33,11 +35,17 @@ def create_windowed_data(filenames,
             label = 2
         else:
              raise Exception("Couldn't find a label")
+   
+        if len(data_x.shape) <3:
+            return
+        
         if trials_end == "end":
             trials_end = data_x.shape[2]
-        if channels_end > len(data_x):
+            
+        if channels_end > data_x.shape[0]:
             raise Exception("More channels are requested than in the data")
-        elif trials_end > len(data_x[0][0]):
+            
+        elif trials_end > data_x.shape[2]:
             trials_end=len(data_x[0][0])
 
         # get all the information for each of the trials

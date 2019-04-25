@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 """
     * Feature Extraction 
     (log power spectral density(PSD), magnitude squared spectral coherence, mutual info between electrode pairs, log ration of left-to-right hemisphere powers and anterior/posterior log power rations, all frequencies of interest ) <= Z-score normalization procedure

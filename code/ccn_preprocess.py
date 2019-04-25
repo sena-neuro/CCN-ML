@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 """
 Statistical useful notes:
 (periodogram,AR,MUSIC)-(PSD)-(LR,MLPNN,SVM)
