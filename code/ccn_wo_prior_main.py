@@ -93,7 +93,7 @@ def main():
     """
     subjFileList = ["data/android_motion_epochs.mat","data/human_motion_epochs.mat","data/robot_motion_epochs.mat"]
     
-    acc, time_ranges = generalized_pipeline(subjFileList, start=100, end=400, window_size=args.w_size,
+    acc, time_ranges = generalized_pipeline(subjFileList, start=0, end=400, window_size=args.w_size,
                                             window_shift=args.shift,
                                             gridsearch=args.gridsearch, verbose=args.verbose)
     print(subjFileList)

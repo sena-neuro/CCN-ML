@@ -2,7 +2,7 @@
 
 # for i in /data2/s*.mat
 
-Exps=('E100w100s')
+Exps=('E100w100s' 'E50w50s')
 
 declare -A params
 
