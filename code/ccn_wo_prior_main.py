@@ -20,11 +20,15 @@ def generalized_pipeline(subjFileList, start=0, end=400, method='svc', gridsearc
     time_ranges = []
     for time in range(start, end, window_shift):
         if not (time + window_size > end):
-            print("window [{} - {}]".format(time, time + window_size))
-            x, y = ccn_algorithms.create_windowed_data(subjFileList, 0,
+            try:
+                print("window [{} - {}]".format(time, time + window_size))
+                x, y = ccn_algorithms.create_windowed_data(subjFileList, 0,
                                                        timeframe_start=time, timeframe_end=time + window_size,
                                                        size=window_size,
                                                        trials_end="end")
+            except:
+                raise Exception
+
             x_train, x_test, y_train, y_test = ccn_preprocess.preprocess(x, y, method="StandardScaler")
             if verbose:
                 print("all data: ", len(x))
@@ -74,6 +78,7 @@ def main():
                 subjFileList.append(file_pth + file)
         dataFileList.append(subjFileList)
         subjFileList = []
+    survivingSubjects = len(dataFileList)
 
     assert args.shift <= args.w_size
     if args.shift == 0:
@@ -81,9 +86,14 @@ def main():
 
     print('(2) Data is sliced into 100 ms windows, shifted by 50 ms (0-100, 50-150, ...)')
     for subjectNo, subjFileList in enumerate(dataFileList):
-        acc, time_ranges = generalized_pipeline(subjFileList, start=0, end=400, window_size=args.w_size,
-                                                window_shift=args.shift,
-                                                gridsearch=args.gridsearch, verbose=args.verbose)
+        try:
+            acc, time_ranges = generalized_pipeline(subjFileList, start=0, end=400, window_size=args.w_size,
+                                                    window_shift=args.shift,
+                                                    gridsearch=args.gridsearch, verbose=args.verbose)
+        except:
+            print("Subject {} is rejected due to number of rejected trials ".format(subjList[subjectNo]))
+            survivingSubjects -= 1
+            continue
         print(subjFileList)
         subj_acc_dict = {str((range_start, range_start+ args.w_size)): acc[i] for i, range_start in enumerate(time_ranges)}
         results_dict[subjList[subjectNo]+'_results'] = subj_acc_dict
@@ -93,7 +103,7 @@ def main():
         plt.clf()
         plt.close()
         acc_mat.append(acc)
-
+    print("{} subjects survived trial rejection".format(survivingSubjects))
     acc_mat = np.array(acc_mat)
     avg_accuracies = list(np.mean(acc_mat, axis=0))
     results_dict['avg_all'] = {str((range_start,range_start+ args.w_size)): avg_accuracies[i] for i, range_start in enumerate(time_ranges)}
