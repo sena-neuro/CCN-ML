@@ -8,32 +8,59 @@
     * Classification
     Mixture of Factor Analysis(MFA - based on maximum likelihood classification rule, allows rank ordering), Monte-Carlo cross validation, Kernelized principal component analysis (KPCA)
 """
-
-# svm is implemented using libsvm
 import sklearn.metrics as metrics
 from sklearn.svm import SVC
 from sklearn.model_selection import GridSearchCV
-from sklearn.linear_model  import LogisticRegression
-#from keras.models import Sequential
-#from keras.layers import Dense, Dropout
-#from keras.callbacks import ModelCheckpoint
+import numpy as np
 
-# SVM 
-#---------------------------------------------------------------------------------
-# useful for now
-def simple_svm(x_train,y_train, x_test, y_test):
-	try:
-		svm_model_linear = SVC(kernel = 'linear', gamma='auto').fit(x_train, y_train) 
-		y_pred   = svm_model_linear.predict(x_test)    
-		accuracy = svm_model_linear.score(x_test, y_test) 
-		from sklearn.metrics import classification_report, confusion_matrix  
-		print(confusion_matrix(y_test,y_pred))  
-		print(classification_report(y_test,y_pred)) 
-		return accuracy
-	except Exception: 
-		print("    Something went wrong! simple_svm() method did not work!\n")
+def svc(x_train, y_train, x_test, y_test, gridsearch=True, verbose=False, kernel='rbf',
+        gamma_grid=np.logspace(-15, 3, base=2, num=10), c_grid=np.logspace(-5, 15, base=2, num=10)):
+
+    # coef grid, others?
+    if gridsearch:
+        svc = SVC(kernel=kernel)  # check
+        if kernel == 'rbf':
+            svc = GridSearchCV(svc, cv=5,n_jobs=-1,
+                               param_grid={"C": c_grid,
+                                           "gamma": gamma_grid})
+        else:
+            print("Gridsearch for degree and coef is not implemented, only the optimal gamma value will be searched")
+            svc = GridSearchCV(svc, cv=5,n_jobs=-1,
+                               param_grid={"gamma": gamma_grid})
+        svc.fit(x_train, y_train)
+        if verbose:
+            print("kernel: ", kernel)
+            print("Best parameters set found on development set:")
+            print()
+            print(svc.best_params_)
+            print()
+            print("Grid scores on development set:")
+            print()
+            means = svc.cv_results_['mean_test_score']
+
+            stds = svc.cv_results_['std_test_score']
+            for mean, std, params in zip(means, stds, svc.cv_results_['params']):
+                print("%0.3f (+/-%0.03f) for %r"
+                      % (mean, std * 2, params))
+            print()
+    else:
+        svc = SVC(kernel=kernel)
+        svc.fit(x_train, y_train)
+    if verbose:
+        print("Detailed classification report:")
+        print()
+        print("The model is trained on the full development set.")
+        print("The scores are computed on the full evaluation set.")
+        print()
+        y_true, y_pred = y_test, svc.predict(x_test)
+        print(metrics.classification_report(y_true, y_pred))
+        print()
+
+    accuracy = svc.score(x_test, y_test)
+    return accuracy
 
 
+'''
 # to be used later
 # more complicated but more useful
 def improved_svm(X_train, y_train, X_test, y_test, multiclass = False):
@@ -41,21 +68,19 @@ def improved_svm(X_train, y_train, X_test, y_test, multiclass = False):
         Create the parameter grid and fit the information with the best model. 
         Return the parameters so that the usage of them will be easier.
     """
-    try: 
-        param_grid = [
-          {'C': [0.1,0.7,0.8,0.9,1], 'kernel': ['linear']},
-          {'C': [0.9,1, 1.1], 'gamma': [0.001, 0.0001], 'kernel': ['rbf']}
-         ]
-        grid_search = GridSearchCV(SVC(), param_grid, cv = 2)
-        grid_search.fit(X_train, y_train)
-        # to choose best params can use also the method: svc_param_selection()
-        #print("    Best parameters: ",grid_search.best_params_)
-        svm_model_linear = SVC(grid_search.best_params_).fit(x_train, y_train) 
-        svm_predictions = svm_model_linear.predict(x_test)    
-        accuracy = svm_model_linear.score(x_test, y_test) 
-        return accuracy
-    except Exception:
-        print("    Something went wrong! improved_svm() method did not work!\n")
+
+    param_grid = [
+      {'C': [0.001, 0.01, 0.1, 1, 10], 'kernel': ['linear']},
+      {'C': [0.001, 0.01, 0.1, 1, 10], 'gamma': ["scale"], 'kernel': ['rbf']}
+     ]
+    grid_search = GridSearchCV(SVC(), param_grid, cv = 5)
+    grid_search.fit(X_train, y_train)
+    # to choose best params can use also the method: svc_param_selection()
+    #print("    Best parameters: ",grid_search.best_params_)
+    svm_model_linear = SVC(**grid_search.best_params_).fit(X_train, y_train) 
+    svm_predictions = svm_model_linear.predict(X_test)    
+    accuracy = svm_model_linear.score(X_test, y_test) 
+    return accuracy
 
 # NOT USED
 def svc_param_selection(X, y, nfolds):
@@ -89,7 +114,7 @@ def logistic_reg(X_train1, y_train1, X_test1, y_test1):
         print("    Something went wrong! improved_svm() method did not work!\n")
         
 
-'''
+
 #-------------------------------------------------------
 # Neural Network - Not finished 
 # tensorflow to be added.
@@ -134,7 +159,7 @@ def improved_NN(x_train, x_test, y_train, y_test):
     print("Accuracy: ", score[1])
     predict2 = [1 if a>0.5 else 0 for a in model.predict(x_test)]
     return
-'''
+
 
 
 #------------------------------------
@@ -161,3 +186,4 @@ if __name__ == "__main__":
     content = logistic_reg(x_train,y_train, x_test, y_test)
     if content != None:
         print("    logistic_reg() works.\n")
+'''
