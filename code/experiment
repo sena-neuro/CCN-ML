@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+
+# for i in /data2/s*.mat
+
+Exps=('E50w50s' 'E50w25s' 'E25w25s' 'E1w1s')
+
+declare -A params
+
+params["E100w100s"]="100 100"
+params["E100w50s"]="100 50"
+params["E100w25s"]="100 25"
+params["E50w50s"]="50 50"
+params["E50w25s"]="50 25"
+params["E25w25s"]="25 25"
+params["E1w1s"]="1 1"
+for i in "${Exps[@]}"; do
+	echo Experiment $i is started
+	sv_path="/auto/data2/oelmas/EEG_AgentPerception_NAIVE/Analysis/Experiments/$i/"
+	in_path='/auto/data2/ser/Data/'
+	mkdir -p  $sv_path
+	python ccn_wo_prior_main.py ${params[$i]}  --gridsearch "$in_path"  "$sv_path"
+	echo Done 
+done
