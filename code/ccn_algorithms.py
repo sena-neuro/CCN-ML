@@ -31,7 +31,7 @@ def create_windowed_data(filenames,
         elif filename.find('robot') >= 0:
             label = 2
         else:
-             raise Exception("Couldn't find a label")
+            raise Exception("Couldn't find a label")
         # Check if trial number is below the minTrialLimit
         if data_x.shape[2] < minTrials:
             raise Exception("Subject has {} trials for agent {} which is less than minimum "
