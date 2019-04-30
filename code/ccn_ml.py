@@ -96,8 +96,7 @@ def svc_param_selection(X, y, nfolds):
     grid_search.fit(X, y)
     grid_search.predict()
     grid_search.best_params_
-    return grid_search.best_params_
-
+    return grid_search.best_params
 # Logistic Regression method
 #---------------------------------------------------------------------------------
 def logistic_reg(X_train1, y_train1, X_test1, y_test1):
