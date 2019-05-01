@@ -19,7 +19,11 @@ def create_windowed_data(filenames,
     for filename in filenames:
         # read the contents
         content    = sio.loadmat(filename)
-        class_type = list(content.keys())[-1] + ''
+        index = [i for i, s in enumerate(list(content.keys())) if 'subj' in s]
+        if index == []:
+            class_type = list(content.keys())[-1] + ''
+        else:
+            class_type = list(content.keys())[index[0]]
         data_x     = np.asarray(content[class_type])
         vector     = []
         wind_start = timeframe_start
@@ -34,6 +38,7 @@ def create_windowed_data(filenames,
             raise Exception("Couldn't find a label")
         # Check if trial number is below the minTrialLimit
         if data_x.shape[2] < minTrials:
+            print(data_x.shape)
             raise Exception("Subject has {} trials for agent {} which is less than minimum "
             "number of trials specified ({} trials).". format(label, data_x.shape[2], minTrials))
 

@@ -14,7 +14,7 @@ import json
 # kernel parameter is only applicable when the method is SVC.
 def generalized_pipeline(subjFileList, start=0, end=400, method='svc', gridsearch=True, window_size=100,
                          window_shift=50, kernel='rbf',
-                         verbose=True, plot=False):
+                         verbose=True, plot=False, minTrials=84):
     # check for different separate time ranges
     accuracies = []
     time_ranges = []
@@ -25,15 +25,16 @@ def generalized_pipeline(subjFileList, start=0, end=400, method='svc', gridsearc
                 x, y = ccn_algorithms.create_windowed_data(subjFileList, 0,
                                                        timeframe_start=time, timeframe_end=time + window_size,
                                                        size=window_size,
-                                                       trials_end="end")
+                                                       trials_end="end",minTrials=minTrials)
             except:
                 raise Exception
 
             x_train, x_test, y_train, y_test = ccn_preprocess.preprocess(x, y, method="StandardScaler")
-            if verbose:
-                print("all data: ", len(x))
-                print("number of training data: ", len(x_train))
-                print("number of test data: ", len(x_test))
+
+            print(subjFileList)
+            print("all data: ", len(x))
+            print("number of training data: ", len(x_train))
+            print("number of test data: ", len(x_test))
 
             if method == 'svc':
                 accuracy = ccn_ml.svc(x_train, y_train, x_test, y_test, gridsearch=gridsearch, kernel=kernel,
@@ -57,6 +58,8 @@ def main():
                         help='The window size (default is 100)')
     parser.add_argument('shift', metavar='window shift', type=int, default=0,
                         help='The window size (default is 0)')
+    parser.add_argument('minTrials', metavar='minimum trial number', type=int,
+                        help='The minimum trial limit for rejection of a subject')
     parser.add_argument('--gridsearch', default=False, action="store_true",
                         help='Perform gridsearch')
     parser.add_argument('-v', '--verbose', default=False, action="store_true",
@@ -84,12 +87,11 @@ def main():
     if args.shift == 0:
         args.shift = args.w_size
 
-    print('(2) Data is sliced into 100 ms windows, shifted by 50 ms (0-100, 50-150, ...)')
     for subjectNo, subjFileList in enumerate(dataFileList):
         try:
             acc, time_ranges = generalized_pipeline(subjFileList, start=0, end=400, window_size=args.w_size,
                                                     window_shift=args.shift,
-                                                    gridsearch=args.gridsearch, verbose=args.verbose)
+                                                    gridsearch=args.gridsearch, verbose=args.verbose,minTrials=args.minTrials)
         except:
             print("Subject {} is rejected due to number of rejected trials ".format(subjList[subjectNo]))
             survivingSubjects -= 1
