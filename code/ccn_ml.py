@@ -16,7 +16,6 @@ import numpy as np
 def svc(x_train, y_train, x_test, y_test, gridsearch=True, verbose=False, kernel='rbf',
         gamma_grid=np.logspace(-15, 3, base=2, num=10), c_grid=np.logspace(-5, 15, base=2, num=10)):
 
-    # coef grid, others?
     if gridsearch:
         svc = SVC(kernel=kernel)  # check
         if kernel == 'rbf':
