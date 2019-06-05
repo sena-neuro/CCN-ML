@@ -1,11 +1,11 @@
 import numpy as np
 import scipy.io as sio
-
+# Reject a subject if a files trial number is less thatn 120 * %20 or %30
 
 # useful! Contains 3 for loops inside: files, trials, window_frames
 def create_windowed_data(filenames,
     test_type=0, channels_start=0, channels_end=62, timeframe_start=100,
-    timeframe_end=1100, trials_start=0, trials_end=50, size=100):
+    timeframe_end=1100, trials_start=0, trials_end=50, size=100, minTrials=96):
     """
         This method creates windowing for each of the channels put to it.
         It is the algorithm which allows comparison between the time trials. 
@@ -17,11 +17,13 @@ def create_windowed_data(filenames,
 
     # for each of the files
     for filename in filenames:
-
         # read the contents
         content    = sio.loadmat(filename)
         index = [i for i, s in enumerate(list(content.keys())) if 'subj' in s]
-        class_type = list(content.keys())[index[0]]
+        if index == []:
+            class_type = list(content.keys())[-1] + ''
+        else:
+            class_type = list(content.keys())[index[0]]
         data_x     = np.asarray(content[class_type])
         vector     = []
         wind_start = timeframe_start
@@ -33,14 +35,20 @@ def create_windowed_data(filenames,
         elif filename.find('robot') >= 0:
             label = 2
         else:
-             raise Exception("Couldn't find a label")
-                
+            raise Exception("Couldn't find a label")
+        # Check if trial number is below the minTrialLimit
+        if data_x.shape[2] < minTrials:
+            print(data_x.shape)
+            raise Exception("Subject has {} trials for agent {} which is less than minimum "
+            "number of trials specified ({} trials).". format(label, data_x.shape[2], minTrials))
+
         if trials_end == "end":
             trials_end = data_x.shape[2]
         if channels_end > len(data_x):
             raise Exception("More channels are requested than in the data")
         elif trials_end > len(data_x[0][0]):
             trials_end=len(data_x[0][0])
+
         # get all the information for each of the trials
         for trial in range(trials_start, trials_end):
             # for each of the window frames that you have decided to work on
@@ -48,7 +56,7 @@ def create_windowed_data(filenames,
 
                 # select the part of data you want, 2d array to 1D with attachment one after the other. 
 
-                vector = data_x[channels_start:channels_end, wind_start: wind_start + size, trial] # TODO: only allows a range allow for specific values too
+                vector = data_x[channels_start:channels_end, wind_start: wind_start + size, trial]
 
                 vector = vector.flatten()
 
@@ -72,6 +80,6 @@ if __name__ == "__main__":
 
     print("Trying create_windowed_data()!\n")
     content = create_windowed_data(["data2/video_android.mat"],
-                                    0, timeframe_start = 0, timeframe_end= 600,size=100, shift=50)
+                                    0, timeframe_start = 0, timeframe_end= 600,size=100)
 
 

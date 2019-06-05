@@ -16,7 +16,6 @@ import numpy as np
 def svc(x_train, y_train, x_test, y_test, gridsearch=True, verbose=False, kernel='rbf',
         gamma_grid=np.logspace(-15, 3, base=2, num=10), c_grid=np.logspace(-5, 15, base=2, num=10)):
 
-    # coef grid, others?
     if gridsearch:
         svc = SVC(kernel=kernel)  # check
         if kernel == 'rbf':
@@ -96,8 +95,7 @@ def svc_param_selection(X, y, nfolds):
     grid_search.fit(X, y)
     grid_search.predict()
     grid_search.best_params_
-    return grid_search.best_params_
-
+    return grid_search.best_params
 # Logistic Regression method
 #---------------------------------------------------------------------------------
 def logistic_reg(X_train1, y_train1, X_test1, y_test1):
