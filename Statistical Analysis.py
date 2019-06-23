@@ -23,83 +23,89 @@
 
 # Import needed libraries and data
 
-import numpy  as np, pandas as pd
-import json,os, glob,re
-from pprint      import pprint
-from scipy.stats import ttest_1samp, ttest_ind, wilcoxon
-from statsmodels.sandbox.stats.multicomp import multipletests
-import matplotlib.pyplot as plt
+import glob
+import json
+import os
 
-def analyze(param, file):
+import matplotlib.pyplot as plt
+import numpy  as np
+import pandas as pd
+from scipy.stats import ttest_1samp
+from statsmodels.sandbox.stats.multicomp import multipletests
+
+
+def analyze(file):
     """Extract significant information from the json file."""
-    
-    #<================================= Data ===============================>
+
+    # <================================= Data ===============================>
     # read data
     with open(file) as f:
-         data    = json.load(f) 
+        data = json.load(f)
 
-    # keys for json object
+        # keys for json object
     subjects = list(data.keys())
-    windows  = list(data[subjects[0]].keys())
+    windows = list(data[subjects[0]].keys())
 
     # information storage
     info_storage = {}
     for each in windows:
-        info_storage[each] = [] # initialization with empty list
-
+        info_storage[each] = []  # initialization with empty list
 
     # store info
     for window in windows:
         for subject in subjects:
             info_storage[window].append(data[subject][window])
 
-    #<================================= Tests ================================>
+    # <================================= Tests ================================>
     # do t-test
     ttest_values = []
     for window in windows:
-        ttest_values.append(ttest_1samp(info_storage[window][:-1],0.333))
+        ttest_values.append(ttest_1samp(info_storage[window][:-1], 0.333))
 
     # combine info
-    avg_values = [ [k,v] for k, v in data['avg_all'].items() ]
-    t_values   = np.asarray(ttest_values)
-    p_values   = [float(i) for i in t_values[:,-1]]
+    avg_values = [[k, v] for k, v in data['avg_all'].items()]
+    t_values = np.asarray(ttest_values)
+    p_values = [float(i) for i in t_values[:, -1]]
 
     # correction
     p_adjusted = multipletests(p_values, method='bonferroni')[:2]
-    p_adjusted_l = list(map(list, zip(*[ x.tolist() for x in p_adjusted])))
+    p_adjusted_l = list(map(list, zip(*[x.tolist() for x in p_adjusted])))
 
     # for ease of use - pandas DataFrame
-    values     = np.concatenate((avg_values,t_values,p_adjusted_l), axis= 1)
-    data       = pd.DataFrame(values) # pandas
-    data.columns = ['window', 'accuracy', 't-statistic', 'pvalue','truthfulness', 'new_p']
-    
-    #<=========================== visualize ==================================>
+    values = np.concatenate((avg_values, t_values, p_adjusted_l), axis=1)
+    data = pd.DataFrame(values)  # pandas
+    data.columns = ['window', 'accuracy', 't-statistic', 'pvalue', 'truthfulness', 'new_p']
+
+    # <=========================== visualize ==================================>
     plt.clf()
     fig, ax = plt.subplots()
-
     # decide on time
-    windows_val    = [y*2 for y in [x-100 for x in range(0,440,param[1])]]
-    
+    windows_val = [2 * (x - 100) for x in [int(wind_frame.strip('()').split(',')[0])
+                                           for wind_frame in windows]]
+
     # average values
-    vals           = [x[-1] for x in avg_values][:len(windows_val)]
-    ax.plot(windows_val,vals)
+    vals = [x[-1] for x in avg_values][:len(windows_val)]
+
+    ax.plot(windows_val, vals)
 
     # p significance
-    sig_index =  data[data['truthfulness'] == '1.0']['accuracy'].index.tolist()[:len(windows_val)]
-    
+    sig_index = data[data['truthfulness'] == '1.0']['accuracy'].index.tolist()[:len(windows_val)]
 
-    #print(windows_val)
-    ax.plot([windows_val[x] for x in sig_index],[vals[x] for x in sig_index], linestyle = 'none', color='r', marker='o')
+    # print(windows_val)
+    ax.plot([windows_val[x] for x in sig_index], [vals[x] for x in sig_index],
+            linestyle='none', color='r', marker='o')
 
     # show starting understanding and chance level
     ax.axvline(x=0, color='black', alpha=0.5, linestyle='--', label='end of baseline period')
     ax.axhline(y=0.33, color='red', alpha=0.5, label='chance level')
 
     ax.legend(loc='upper right')
-    ax.set_title('Classification accuracies for window size of '+ str(param[0]) + ' with a shift of '+ str(param[1]) + ' ms')
-    fig.savefig("/home/doren/Desktop/"+ 'avg_accuracy_' + str(param[0]) +'_'+ str(param[1])+'.png', bbox_inches='tight')
-    #plt.show()
-
+    ax.set_title('Classification accuracies')  # If we really want to, we can get
+    # the window size and shift from the data
+    dir = os.path.dirname(file)  ## directory of file
+    fig.savefig(dir+'/avg_accuracy.png', bbox_inches='tight')
+    plt.clf()
+    plt.close()
 def choose_from_options( list_options, replace_option = ""):
     """Printing options the easily for the user to use."""
     
@@ -115,8 +121,7 @@ def choose_from_options( list_options, replace_option = ""):
 
 def choose( folder_list):
     """Choose the accuracies you want to work with."""
-    
-    
+
     # get directory you want to work with
     folder_num  = choose_from_options( folder_list)
     
@@ -132,20 +137,18 @@ def choose( folder_list):
         return
     
     else:
-        # find window and shift
-        param = [int(x) for x in re.findall(r'\d+', (folders[subdir].replace(folder_list[folder_num],"")))]
-        analyze(param, folders[subdir])
+        analyze(folders[subdir])
 
 def run_all(folder_list):
+
 	"""Run all the information that is in each folder."""
 
 	for each in folder_list:
 		folders =  glob.glob(  each + "*/accuracy_results.json")
 		for each_subdir in folders:
-			param = [int(x) for x in re.findall(r'\d+', (each_subdir.replace(each,"")))]
-			analyze(param, each_subdir)
+			analyze(each_subdir)
 
-folder_list = [ "/home/doren/Desktop/CCN-ML/code/0_900/","/home/doren/Desktop/CCN-ML/code/0_700/"]         
+folder_list = [ "/Users/huseyinelmas/Desktop/Experiments/"]
 #choose(folder_list)
 run_all(folder_list)
 
