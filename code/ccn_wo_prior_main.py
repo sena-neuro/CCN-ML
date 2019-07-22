@@ -66,6 +66,8 @@ def main():
                         help='Input of data path of the experiment')
     parser.add_argument('save_path', metavar='output path', type=str,
                         help='Path to save the results of the experiment')
+    parser.add_argument('input_type', type=str, choices=['Still','Video'],help="The type of the input still or video")
+
     args = parser.parse_args()
     dataFileList = []
     subjFileList = []
@@ -107,7 +109,7 @@ def main():
                                  enumerate(time_ranges)}
                 results_dict[subjList[subjectNo] + '_results'] = subj_acc_dict
                 plt.plot(time_ranges, acc)
-                plt.savefig(args.save_path + subjList[subjectNo] + '_accuracy.png',
+                plt.savefig(args.save_path + args.input_type + "_"  +  subjList[subjectNo] + '_accuracy.png',
                             bbox_inches='tight')
                 plt.clf()
                 plt.close()
@@ -132,10 +134,10 @@ def main():
 
         # plot found results
         plt.plot(time_ranges, avg_accuracies)
-        plt.savefig(args.save_path + 'avg_accuracy.png', bbox_inches='tight')
+        plt.savefig(args.save_path+ args.input_type +'_avg_accuracy.png', bbox_inches='tight')
         plt.clf()
         plt.close()
-        filename = args.save_path + 'accuracy_results.json'
+        filename = args.save_path + args.input_type+ '_accuracy_results.json'
         with open(filename, 'w') as f:
             json.dump(results_dict, f)
 
