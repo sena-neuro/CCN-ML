@@ -112,9 +112,10 @@ def main():
     # run code
     for subjectNo, subjFileList in enumerate(dataFileList):
         try:
-            acc, time_ranges = generalized_pipeline(subjFileList, start=0,end=500, window_size=args.w_size, window_shift=args.shift, gridsearch=args.gridsearch, verbose=args.verbose, minTrials=args.minTrials)
+            acc, time_ranges = generalized_pipeline(subjFileList, start=0,end=400, window_size=args.w_size, window_shift=args.shift, gridsearch=args.gridsearch, verbose=args.verbose, minTrials=args.minTrials)
 
         except:
+
             print("Subject {} is rejected due to number of rejected trials ".format(subjList[subjectNo]))
             survivingSubjects -= 1
             continue
@@ -133,6 +134,9 @@ def main():
     print("{} subjects survived trial rejection".format(survivingSubjects))
     acc_mat = np.array(acc_mat)
     avg_accuracies = list(np.mean(acc_mat, axis=0))
+
+    print(time_ranges)
+    print(avg_accuracies)
     results_dict['avg_all'] = {str((range_start,range_start+ args.w_size)): avg_accuracies[i] for i, range_start in enumerate(time_ranges)}
 
     # plot found results

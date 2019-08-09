@@ -18,10 +18,10 @@ params["E80w40s"]="80 40"
 minTrial="0"
 for i in "${Exps[@]}"; do
     echo Experiment $i is started
-    in_path="/home/doren/Desktop/Data_Beta/"
-    sv_path="/home/doren/Desktop/CCN-ML/code/beta/$i/"
+    in_path="/home/user/Desktop/setFiles/"
+    sv_path="/home/user/Desktop/CCN-ML/code/beta/$i/"
     mkdir -p  $sv_path
-    python ccn_wo_prior_main.py ${params[$i]} "$minTrial" "$in_path"  "$sv_path"
+    python3 ccn_wo_prior_main.py ${params[$i]} "--gridsearch" "$minTrial" "$in_path"  "$sv_path"
     echo Done 
 done
 
