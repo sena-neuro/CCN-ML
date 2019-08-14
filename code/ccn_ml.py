@@ -12,6 +12,8 @@ import sklearn.metrics as metrics
 from sklearn.svm import SVC
 from sklearn.model_selection import GridSearchCV
 import numpy as np
+from sklearn.linear_model import LogisticRegression
+from sklearn.tree import DecisionTreeClassifier # Import Decision Tree Classifier
 
 def svc(x_train, y_train, x_test, y_test, gridsearch=True, verbose=False, kernel='rbf',
         gamma_grid=np.logspace(-15, 3, base=2, num=10), c_grid=np.logspace(-5, 15, base=2, num=10)):
@@ -56,10 +58,24 @@ def svc(x_train, y_train, x_test, y_test, gridsearch=True, verbose=False, kernel
         print()
 
     accuracy = svc.score(x_test, y_test)
+        
     return accuracy
 
+def decision_tree(X_train, y_train, X_test, y_test):
+    
+    #Create Decision Tree classifer object
+    clf = DecisionTreeClassifier()
 
+    # Train Decision Tree Classifer
+    clf = clf.fit(X_train,y_train)
+
+    #Predict the response for test dataset
+    y_pred = clf.predict(X_test)
+    #print(clf.score(X_train, y_train))
+    #print("Accuracy:",metrics.accuracy_score(y_test, y_pred))
+    return metrics.accuracy_score(y_test, y_pred)
 '''
+
 # to be used later
 # more complicated but more useful
 def improved_svm(X_train, y_train, X_test, y_test, multiclass = False):
@@ -80,7 +96,7 @@ def improved_svm(X_train, y_train, X_test, y_test, multiclass = False):
     svm_predictions = svm_model_linear.predict(X_test)    
     accuracy = svm_model_linear.score(X_test, y_test) 
     return accuracy
-
+'''
 # NOT USED
 def svc_param_selection(X, y, nfolds):
     """
@@ -96,23 +112,29 @@ def svc_param_selection(X, y, nfolds):
     grid_search.predict()
     grid_search.best_params_
     return grid_search.best_params
+
 # Logistic Regression method
 #---------------------------------------------------------------------------------
 def logistic_reg(X_train1, y_train1, X_test1, y_test1):
     """
         Use this statistical method to find a classifier. 
     """
+
     try: 
+        #print(y_test1)
         clf_D = LogisticRegression(solver='liblinear')
         clf_D.fit(X_train1, y_train1)
         predict = clf_D.predict(X_test1)
-        score = [metrics.accuracy_score(y_test1, predict), metrics.precision_score(y_test1, predict),metrics.recall_score(y_test1, predict),metrics.f1_score(y_test1, predict)]
-        return score
-    except Exception: 
-        print("    Something went wrong! improved_svm() method did not work!\n")
-        
+        #score = [metrics.accuracy_score(y_test1, predict), metrics.precision_score(y_test1, predict),metrics.recall_score(y_test1, predict),metrics.f1_score(y_test1, predict)]
+        #print( y_test1 - predict)
+        #print(clf_D.score(X_train1, y_train1))
+        return metrics.precision_score( y_test1, predict, average='micro')
 
+    except Exception as e: 
+        print(e)
+        return 0
 
+'''   
 #-------------------------------------------------------
 # Neural Network - Not finished 
 # tensorflow to be added.
@@ -159,7 +181,6 @@ def improved_NN(x_train, x_test, y_train, y_test):
     return
 
 
-
 #------------------------------------
 # testing
 
@@ -171,17 +192,18 @@ if __name__ == "__main__":
     y_test  = [1,1]
     
     print("Trying simple_svm()!\n")
-    content = simple_svm(x_train,y_train, x_test, y_test)
-    if content != None:
-        print("    simple_svm() works.\n")
+    #content =  svc(x_train,y_train, x_test, y_test)
+    #if content != None:
+    #    print("    simple_svm() works.\n")
         
     print("Trying improved_svm()!\n")
-    content = improved_svm(x_train,y_train, x_test, y_test)
-    if content != None:
-        print("    improved_svm() works.\n")
+    #content = improved_svm(x_train,y_train, x_test, y_test)
+    #if content != None:
+    #    print("    improved_svm() works.\n")
     
     print("Trying logistic_reg()!\n")
     content = logistic_reg(x_train,y_train, x_test, y_test)
     if content != None:
-        print("    logistic_reg() works.\n")
+        print("logistic_reg() works.\n")
+        print( content)
 '''

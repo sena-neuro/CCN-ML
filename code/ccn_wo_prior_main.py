@@ -16,9 +16,9 @@ import json
 # Generalized Pipeline
 # Currently, only SVC is available.
 # kernel parameter is only applicable when the method is SVC.
-def generalized_pipeline(subjFileList, start=0, end=400, method='svc', \
+def generalized_pipeline(subjFileList, start=0, end=300, method='svc', \
                          gridsearch=True, window_size=100, window_shift=50,\
-                         kernel='rbf', verbose=True, plot=False, minTrials=84):
+                         kernel='rbf', verbose=True, plot=False, minTrials=0):
     """
         Create the information flow for proper calculations.
     """
@@ -29,26 +29,32 @@ def generalized_pipeline(subjFileList, start=0, end=400, method='svc', \
 
     for time in range(start, end, window_shift):
         if not (time + window_size > end):
+            
             try:
-                print("window [{} - {}]".format(time, time + window_size))
+                if verbose:
+                    print("window [{} - {}]".format(time, time + window_size))
                 # use information
                 x, y = ccn_algorithms.create_windowed_data(subjFileList, 0,
                                                        timeframe_start=time, timeframe_end=time + window_size,
                                                        size=window_size,
                                                        trials_end="end",minTrials=minTrials)
-            except:
-                raise Exception
+            except Exception as e:
+                print(e)
 
-            x_train, x_test, y_train, y_test = ccn_preprocess.preprocess(x, y, method="StandardScaler")
-
+            x_train, x_test, y_train, y_test = ccn_preprocess.preprocess(x, y,method = "MinMaxScaler")
             #print(subjFileList)
             #print("all data: ", len(x))
             #print("number of training data: ", len(x_train))
             #print("number of test data: ", len(x_test))
 
-            if method == 'svc':
+            if method   == 'svc':
                 accuracy = ccn_ml.svc(x_train, y_train, x_test, y_test, gridsearch=gridsearch, kernel=kernel,
                                       verbose=verbose)
+            elif method == "lc":
+                accuracy = ccn_ml.logistic_reg(x_train, y_train, x_test, y_test)
+            elif method == "dt":
+                accuracy = ccn_ml.decision_tree(x_train, y_train, x_test, y_test)
+
             accuracies.append(accuracy)
             time_ranges.append(time)
     if plot:
@@ -111,11 +117,12 @@ def main():
         args.shift = args.w_size
     # run code
     for subjectNo, subjFileList in enumerate(dataFileList):
+        
         try:
-            acc, time_ranges = generalized_pipeline(subjFileList, start=0,end=400, window_size=args.w_size, window_shift=args.shift, gridsearch=args.gridsearch, verbose=args.verbose, minTrials=args.minTrials)
-
-        except:
-
+            acc, time_ranges = generalized_pipeline(subjFileList, method = "svc",start=0,end=400, window_size=args.w_size, window_shift=args.shift, gridsearch=args.gridsearch, verbose=args.verbose, minTrials=args.minTrials)
+            
+        except Exception as e:
+            print(e)
             print("Subject {} is rejected due to number of rejected trials ".format(subjList[subjectNo]))
             survivingSubjects -= 1
             continue
@@ -134,7 +141,6 @@ def main():
     print("{} subjects survived trial rejection".format(survivingSubjects))
     acc_mat = np.array(acc_mat)
     avg_accuracies = list(np.mean(acc_mat, axis=0))
-
     print(time_ranges)
     print(avg_accuracies)
     results_dict['avg_all'] = {str((range_start,range_start+ args.w_size)): avg_accuracies[i] for i, range_start in enumerate(time_ranges)}

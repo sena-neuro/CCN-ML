@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
 
-# for i in /data2/s*.mat
-
 Exps=("E80w40s")
 declare -A params
 
@@ -15,14 +13,12 @@ params["E40w20s"]="40 20"
 params["E20w20s"]="20 20"
 params["E80w40s"]="80 40"
 
-minTrial="0"
+minTrial='0'
 for i in "${Exps[@]}"; do
     echo Experiment $i is started
-    in_path="/home/user/Desktop/setFiles/"
+    in_path="/home/user/Desktop/data_eeg/"
     sv_path="/home/user/Desktop/CCN-ML/code/beta/$i/"
     mkdir -p  $sv_path
-    python3 ccn_wo_prior_main.py ${params[$i]} "--gridsearch" "$minTrial" "$in_path"  "$sv_path"
+    python3 ccn_wo_prior_main.py ${params[$i]} "$minTrial" "$in_path"  "$sv_path"
     echo Done 
 done
-
-

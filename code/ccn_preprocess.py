@@ -26,7 +26,7 @@ def preprocess(x, y, train_test=True, method="StandardScaler", scaler=True, tran
     1. MinMax Scaler
     2. Simple Transformer
     3. Train test split
-"""
+    """
     if (method == "StandardScaler"):
         scaler = StandardScaler()
         scaler.fit(x)
@@ -45,7 +45,8 @@ def preprocess(x, y, train_test=True, method="StandardScaler", scaler=True, tran
         x = (x - data_mean) / data_std
 
     if train_test:
-        x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.20, random_state=42)
+        import random
+        x_train, x_test, y_train, y_test =  train_test_split(x, y, test_size=0.2, random_state=43) 
         return x_train, x_test, y_train, y_test
 
     else:

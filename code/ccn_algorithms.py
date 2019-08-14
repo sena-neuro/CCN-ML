@@ -20,6 +20,7 @@ def create_windowed_data(filenames,
         # read the contents
         content    = sio.loadmat(filename)
         index = [i for i, s in enumerate(list(content.keys())) if 'subj' in s]
+        
         if index == []:
             class_type = list(content.keys())[-1] + ''
         else:
@@ -36,6 +37,7 @@ def create_windowed_data(filenames,
             label = 2
         else:
             raise Exception("Couldn't find a label")
+            
         # Check if trial number is below the minTrialLimit
         if data_x.shape[2] < minTrials:
             print(data_x.shape)
