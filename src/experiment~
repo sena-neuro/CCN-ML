@@ -17,7 +17,7 @@ minTrial='0'
 for i in "${Exps[@]}"; do
     echo Experiment $i is started
     in_path="/home/user/Desktop/EEG_data/Static/"
-    sv_path="/home/user/Desktop/EEG_results/beta/$i/"
+    sv_path="/home/user/Desktop/CCN-ML/code/beta/$i/"
     mkdir -p  $sv_path
     python3 analysis/ccn_wo_prior_main.py ${params[$i]} "$minTrial" "$in_path"  "$sv_path"
     echo Done 
