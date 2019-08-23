@@ -11,7 +11,7 @@ import numpy as np
 # Get the files.
 # Print Information.
 # Store needed information.
-for each in glob.glob("/home/user/Desktop/EEG_data/Static/*/*.set"): 
+for each in glob.glob("/home/user/Desktop/data_eeg/subj01/Still/*.set"): 
     # read epochs object
     eeglab_obj = read_epochs_eeglab(each)
 

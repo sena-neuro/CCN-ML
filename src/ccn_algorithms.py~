@@ -4,7 +4,7 @@ import scipy.io as sio
 
 # useful! Contains 3 for loops inside: files, trials, window_frames
 def create_windowed_data(filenames,
-    test_type=0, channels_start=0, channels_end=60, timeframe_start=100,
+    test_type=0, channels_start=0, channels_end=62, timeframe_start=100,
     timeframe_end=1100, trials_start=0, trials_end=50, size=100, minTrials=96):
     """
         This method creates windowing for each of the channels put to it.
