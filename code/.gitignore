@@ -1,5 +1,5 @@
 *.pyc
 matlab/
 .*/
-.idea/*
+.idea/
 .ipynb_checkpoints/*
