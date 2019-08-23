@@ -1,6 +1,7 @@
 import ccn_algorithms
 import ccn_ml
 import ccn_preprocess
+import ccn_visualization
 import matplotlib as mpl
 import numpy as np
 
@@ -9,8 +10,10 @@ import matplotlib.pyplot as plt
 import argparse
 import os
 import json
+from sklearn.metrics import confusion_matrix
 
 
+# TODO: M
 # Generalized Pipeline
 # Currently, only SVC is available.
 # kernel parameter is only applicable when the method is SVC.
@@ -19,7 +22,7 @@ def generalized_pipeline(subjFileList, start, end, window_size, window_shift, mi
     # check for different separate time ranges
     accuracies = []
     time_ranges = []
-
+    cms = []
     for time in range(start, end, window_shift):
         if not (time + window_size > end):
 
@@ -32,17 +35,24 @@ def generalized_pipeline(subjFileList, start, end, window_size, window_shift, mi
             x_train, x_test, y_train, y_test = ccn_preprocess.preprocess(x, y, method="StandardScaler")
 
             if method == 'svc':
-                accuracy = ccn_ml.svc(x_train, y_train, x_test, y_test, gridsearch=gridsearch, kernel=kernel,
+                accuracy, y_pred = ccn_ml.svc(x_train, y_train, x_test, y_test, gridsearch=gridsearch, kernel=kernel,
                                       verbose=verbose)
+
+                # Compute confusion matrix
+                cms.append(confusion_matrix(y_test, y_pred).tolist())
+
             accuracies.append(accuracy)
             time_ranges.append(time)
     if verbose:
         print(accuracies)
-    return accuracies, time_ranges
+    return accuracies, time_ranges, cms
 
 
 def main():
+    results_dict = {}
     acc_mat = []
+    cm_mat = []
+    classes = ['human', 'android', 'robot']
     parser = argparse.ArgumentParser(
         description="For each subject data, divide  to windows with specified size and shift.\n"
                     "Run classification on each window and find accuracies for each window\n "
@@ -100,21 +110,45 @@ def main():
     for subjectNo, subjFileList in enumerate(dataFileList):
         if subjFileList:
             try:
-                acc, time_ranges = generalized_pipeline(subjFileList, start=args.start, end=args.end,
+                acc, time_ranges, cms = generalized_pipeline(subjFileList, start=args.start, end=args.end,
                                                         window_size=args.w_size,
                                                         window_shift=args.shift, min_trials=args.min_trials,
                                                         gridsearch=args.gridsearch, verbose=args.verbose)
+
                 # store results
+                # Confusion matricies per subject
+                subj_cm_dict = {str((range_start, range_start + args.w_size)): cms[i] for i, range_start in
+                                enumerate(time_ranges)}
+                # Accuracies per subject
                 subj_acc_dict = {str((range_start, range_start + args.w_size)): acc[i] for i, range_start in
                                  enumerate(time_ranges)}
-                results_dict[subjList[subjectNo] + '_results'] = subj_acc_dict
+
+                # Add cms and accuracies to a bigger dictionary
+                results_dict[subjList[subjectNo] + 'accuracy_results'] = subj_acc_dict
+                results_dict[subjList[subjectNo] + 'cms'] = subj_cm_dict
+
+                # Plot and save the plot of each confusion matrix in cms. Might also draw only some cms
+                for time_range, cm in subj_cm_dict.items():
+                    ccn_visualization.plot_confusion_matrix(
+                        cm, classes, title = " Confusion Matrix of Subject Time Window: " + subjList[subjectNo]
+                                             +"\n On time window "+ time_range)
+                    plt.savefig(
+                        args.save_path + args.input_type + "_" +
+                        time_range + "_" + subjList[subjectNo] + "_cm.png",
+                            bbox_inches='tight')
+                    plt.clf()
+                    plt.close()
+
+                # Plot and save the accuracy graph per subject
                 plt.plot(time_ranges, acc)
                 plt.savefig(args.save_path + args.input_type + "_"  +  subjList[subjectNo] + '_accuracy.png',
                             bbox_inches='tight')
                 plt.clf()
                 plt.close()
-                acc_mat.append(acc)
 
+                # Create bigger matricies to hold accuracy and cm information for averaging ease
+                acc_mat.append(acc)
+                cm_mat.append(cms)
             except AssertionError as err:
                 print(err)
                 survivingSubjects -= 1
@@ -127,21 +161,33 @@ def main():
     # store in the end
     print("{} subjects survived trial rejection".format(survivingSubjects))
     if survivingSubjects != 0:
-        acc_mat = np.array(acc_mat)
-        avg_accuracies = list(np.mean(acc_mat, axis=0))
-        results_dict['avg_all'] = {str((range_start, range_start + args.w_size)): avg_accuracies[i] for i, range_start in
-                                   enumerate(time_ranges)}
-
+        avg_cms = np.mean(np.array(cm_mat), axis=0)
+        avg_accuracies = np.mean(np.array(acc_mat), axis=0).tolist()
+        results_dict['avg_accuracies'] = {str((range_start, range_start + args.w_size)): avg_accuracies[i] for
+                                          i, range_start in enumerate(time_ranges)}
+        results_dict['avg_cm'] = {str((range_start, range_start + args.w_size)): avg_cms[i].tolist() for
+                                        i, range_start in enumerate(time_ranges)}
         # plot found results
         plt.plot(time_ranges, avg_accuracies)
         plt.savefig(args.save_path+ args.input_type +'_avg_accuracy.png', bbox_inches='tight')
         plt.clf()
         plt.close()
+        for time_range, cm in results_dict['avg_cm'].items():
+            ccn_visualization.plot_confusion_matrix(
+                cm, classes,
+                title = " Average Confusion Matrix On Time Window: " + time_range, avg=True)
+            plt.savefig(args.save_path + args.input_type + "_" + time_range +'_avg_cm.png',
+                        bbox_inches='tight')
+            plt.savefig(
+                args.save_path + args.input_type + "_" +
+                time_range + "_avg_cm.png",
+                bbox_inches='tight')
+            plt.clf()
+            plt.close()
         filename = args.save_path + args.input_type+ '_accuracy_results.json'
         with open(filename, 'w') as f:
             json.dump(results_dict, f)
 
 
 if __name__ == '__main__':
-    results_dict = {}
     main()

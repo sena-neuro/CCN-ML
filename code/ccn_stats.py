@@ -23,11 +23,11 @@
 
 # Import needed libraries and data
 
-import ccn_visualization
 import glob
 import json
 import os
 
+import ccn_visualization
 import numpy  as np
 import pandas as pd
 from scipy.stats import ttest_1samp
@@ -70,12 +70,11 @@ def analyze(avg_values, eeg_sliced):
         ttest_values.append(ttest_1samp(eeg_sliced[window], 0.333))
 
     # combine info
-    # avg_values = [[k, v] for k, v in data['avg_all'].items()]
     t_values = np.asarray(ttest_values)
     p_values = [float(i) for i in t_values[:, -1]]
 
-    # correction
-    p_adjusted = multipletests(p_values, method='bonferroni')[:2]
+    # p value correction
+    p_adjusted = multipletests(p_values, alpha=0.05, method='bonferroni')[:2]
     p_adjusted_l = list(map(list, zip(*[x.tolist() for x in p_adjusted])))
 
     # for ease of use - pandas DataFrame
@@ -149,9 +148,6 @@ def overlaying_analysis(video_path, still_path):
 
     return v_sig_index, s_sig_index, windows_val, v_vals, s_vals
 
-    # TODO: Ask what is the folder list and when it is necessary
-
-
 def run_all(folder_list, overlaying=False):
 
     # Run all the information that is in each folder.
@@ -172,10 +168,13 @@ def overlay_all(main_folder_path):
         file_pth = main_folder_path + folder + '/'
         # get all the files
         files = [file_pth+name for name in os.listdir(file_pth) if name.endswith(".json")]
-        v_sig_index, s_sig_index, windows_val, v_vals, s_vals = overlaying_analysis(files[0],files[1])
-        dir = os.path.dirname(files[0])
-        ccn_visualization.visualize_still_and_video(dir, '/overlayed_avg_accuracy.png', v_sig_index, s_sig_index, windows_val, v_vals,
-                                  s_vals)
+        if files:
+            v_sig_index, s_sig_index, windows_val, v_vals, s_vals = overlaying_analysis(files[0],files[1])
+            dir = os.path.dirname(files[0])
+            ccn_visualization.visualize_still_and_video(dir, '/overlayed_avg_accuracy.png', v_sig_index, s_sig_index, windows_val, v_vals,
+                                      s_vals)
+        else:
+            print("Error: No files were found")
 
 if __name__ == "__main__":
     overlay_all("/home/sena/Desktop/Experiments/")
