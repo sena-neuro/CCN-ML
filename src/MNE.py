@@ -6,16 +6,17 @@ import mne, os, glob
 from mne.io import read_raw_brainvision, read_epochs_eeglab
 import scipy
 import numpy as np
-
-
 # Get the files.
 # Print Information.
 # Store needed information.
-for each in glob.glob("/home/user/Desktop/EEG_data/Static/*/*.set"): 
+directory = '/home/user/Desktop/EEG_data/Static/'
+for each in glob.glob(directory + "*/*.set"): 
+  
+    subj = each.replace(directory,"")
     # read epochs object
     eeglab_obj = read_epochs_eeglab(each)
-
-    # apply baseline
+    
+    # apply basealine
     eeglab_obj.apply_baseline((-0.2,0))
 
     # remove channels
@@ -35,5 +36,6 @@ for each in glob.glob("/home/user/Desktop/EEG_data/Static/*/*.set"):
     rolled_data = np.rollaxis(data, 2)
     rolled_data = np.rollaxis(rolled_data, 2)
     
-    name = "subj01_" + each.replace("/home/user/Desktop/data_eeg/subj01/Still/","").replace("set","mat")
-    scipy.io.savemat( name, { name.replace(".mat",""): rolled_data})
+    name = subj[7:].replace("set","mat")
+    each.replace("set","mat")
+    scipy.io.savemat( each.replace("set","mat"), { name.replace(".mat","").replace("_s_","_static_"): rolled_data})
