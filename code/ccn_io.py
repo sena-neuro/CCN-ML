@@ -1,6 +1,7 @@
-import scipy.io as sio
 import mne
 import numpy as np
+import scipy.io as sio
+
 
 # read mat file only
 def read_file(fname = "data.mat"):

@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# Import needed information 
-import mne, os, glob
-from mne.io import read_raw_brainvision, read_epochs_eeglab
-import scipy
-import numpy as np
+# Import needed information
+import glob
 
+import numpy as np
+import scipy
+from mne.io import read_epochs_eeglab
 
 # Get the files.
 # Print Information.

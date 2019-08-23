@@ -13,11 +13,11 @@ Statistical useful notes:
 * zero padding process was performed
 * Rectangular and Hanning windows
 """
+import numpy as np
+from sklearn.model_selection import train_test_split
 # preprocessing
 from sklearn.preprocessing import MinMaxScaler
-from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
-import numpy as np
 
 
 def preprocess(x, y, train_test=True, method="StandardScaler", scaler=True, transform=False):

@@ -6,15 +6,15 @@
 # * https://en.wikipedia.org/wiki/Electroencephalography (for the bands and what they mean)
 
 
-# Libraries needed
-import numpy as np
-from numpy import *
-from scipy.signal import freqz
-from numpy.fft import * 
-#from matplotlib import *
-#from scipy import *
-from pylab import linspace
 import scipy.io as sio
+# Libraries needed
+from numpy import *
+from numpy.fft import *
+# from matplotlib import *
+# from scipy import *
+from pylab import linspace
+from scipy.signal import freqz
+
 
 def get_bands(data, low =0, high = 4):
     """ Take alpha, beta, gamma or delta bands depending on input.
@@ -34,8 +34,7 @@ def get_bands(data, low =0, high = 4):
     import matplotlib.pyplot as plt
     import seaborn as sns
     from scipy import signal
-    from scipy.integrate import simps
-    
+
     # sampling frequency
     sf  = 500
     win = 1050
