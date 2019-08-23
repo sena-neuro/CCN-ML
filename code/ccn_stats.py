@@ -39,6 +39,11 @@ def read_and_prepare_data(file):
     with open(file) as f:
         data = json.load(f)
 
+    # the average classification accuracy for each window among the subjects
+    avg_values = [[k, v] for k, v in data['avg_all'].items()]
+    # remove the average from data
+    del (data['avg_all'])
+
     # keys for json object
     subjects = list(data.keys())
     windows = list(data[subjects[0]].keys())
@@ -53,19 +58,16 @@ def read_and_prepare_data(file):
         for subject in subjects:
             eeg_sliced[window].append(data[subject][window])
 
-    avg_values = [[k, v] for k, v in data['avg_all'].items()]
-
     return avg_values, eeg_sliced
 
 
 def analyze(avg_values, eeg_sliced):
-    """Extract significant information from the json file."""
 
     windows = list(eeg_sliced.keys())
 
     ttest_values = []
     for window in windows:
-        ttest_values.append(ttest_1samp(eeg_sliced[window], 0.333))  # Why [:-1] and not all of eeg_sliced
+        ttest_values.append(ttest_1samp(eeg_sliced[window], 0.333))
 
     # combine info
     # avg_values = [[k, v] for k, v in data['avg_all'].items()]
@@ -92,8 +94,6 @@ def analyze(avg_values, eeg_sliced):
     sig_index = data[data['truthfulness'] == '1.0']['accuracy'].index.tolist()[:len(windows_val)]
 
     return sig_index, windows_val, vals
-
-
 
 
 def choose_from_options( list_options, replace_option = ""):
