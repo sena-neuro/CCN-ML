@@ -30,7 +30,7 @@ import os
 import ccn_visualization
 import numpy  as np
 import pandas as pd
-from scipy.stats import ttest_1samp
+from scipy.stats import ttest_1samp, ttest_ind
 from statsmodels.sandbox.stats.multicomp import multipletests
 
 
@@ -39,9 +39,7 @@ def read_and_prepare_data(file):
     with open(file) as f:
         data = json.load(f)
 
-    # the average classification accuracy for each window among the subjects
     avg_values = [[k, v] for k, v in data['avg_all'].items()]
-    # remove the average from data
     del (data['avg_all'])
 
     # keys for json object
@@ -61,39 +59,35 @@ def read_and_prepare_data(file):
     return avg_values, eeg_sliced
 
 
-def analyze(avg_values, eeg_sliced):
+def compare_with_chance_level(eeg_sliced):
 
-    windows = list(eeg_sliced.keys())
+    n_subjects = len(next(iter(eeg_sliced.values())))
+    chance_level = {key: [0.3333]*n_subjects for key in eeg_sliced.keys()}
+
+    return compare_vectors(eeg_sliced, chance_level)
+
+
+def compare_vectors(vector1, vector2):
+    '''Find significantly different time windows'''
+
+    windows = list(vector1.keys())
 
     ttest_values = []
     for window in windows:
-        ttest_values.append(ttest_1samp(eeg_sliced[window], 0.333))
+        ttest_values.append(ttest_ind(vector1[window], vector2[window]))
 
-    # combine info
+        # combine info
     t_values = np.asarray(ttest_values)
     p_values = [float(i) for i in t_values[:, -1]]
 
-    # p value correction
-    p_adjusted = multipletests(p_values, alpha=0.05, method='bonferroni')[:2]
+    # correction
+    p_adjusted = multipletests(p_values, method='bonferroni')[:2]
     p_adjusted_l = list(map(list, zip(*[x.tolist() for x in p_adjusted])))
 
-    # for ease of use - pandas DataFrame
-    values = np.concatenate((avg_values, t_values, p_adjusted_l), axis=1)
-    data = pd.DataFrame(values)  # pandas
-    data.columns = ['window', 'accuracy', 't-statistic', 'pvalue', 'truthfulness', 'new_p']
+    # significant indices
+    sig_indices = np.where(p_adjusted[0])[0].tolist()
 
-    # decide on time
-    windows_val = [2 * (x - 100) for x in [int(wind_frame.strip('()').split(',')[0])
-                                           for wind_frame in windows]]
-
-    # average values
-    vals = [x[-1] for x in avg_values][:len(windows_val)]
-
-    # p significance
-    sig_index = data[data['truthfulness'] == '1.0']['accuracy'].index.tolist()[:len(windows_val)]
-
-    return sig_index, windows_val, vals
-
+    return sig_indices
 
 def choose_from_options( list_options, replace_option = ""):
     """Printing options the easily for the user to use."""
@@ -132,21 +126,24 @@ def choose( folder_list):
         ccn_visualization.visualize(dir, s, w, v)
 
 
-def overlaying_analysis(video_path, still_path):
+def overlay(video_path, still_path):
     "Takes paths to results json of video and still input experiments, and overlays the significance analysis"
 
     v_avg_vals, v_eeg_sliced = read_and_prepare_data(video_path)
-    v_sig_index, v_windows_val, v_vals = analyze(v_avg_vals, v_eeg_sliced)
+    v_sig_index = compare_with_chance_level(v_eeg_sliced)
 
     s_avg_vals, s_eeg_sliced = read_and_prepare_data(still_path)
-    s_sig_index, s_windows_val, s_vals = analyze(s_avg_vals, s_eeg_sliced)
+    s_sig_index = compare_with_chance_level(s_eeg_sliced)
 
-    if (v_windows_val == s_windows_val):
-        windows_val = s_windows_val
-    else:
+    windows = list(v_eeg_sliced.keys())
+
+    if(windows != list(s_eeg_sliced.keys())):
         raise Exception('Still and video window values are not equal')
 
-    return v_sig_index, s_sig_index, windows_val, v_vals, s_vals
+    dir = os.path.dirname(video_path)  ## directory of file
+    ccn_visualization.visualize_still_and_video(dir,'/overlayed_avg_accuracy.png', v_sig_index, s_sig_index, windows, v_avg_vals, s_avg_vals)
+
+    # TODO: Ask what is the folder list and when it is necessary
 
 def run_all(folder_list, overlaying=False):
 
@@ -169,10 +166,7 @@ def overlay_all(main_folder_path):
         # get all the files
         files = [file_pth+name for name in os.listdir(file_pth) if name.endswith(".json")]
         if files:
-            v_sig_index, s_sig_index, windows_val, v_vals, s_vals = overlaying_analysis(files[0],files[1])
-            dir = os.path.dirname(files[0])
-            ccn_visualization.visualize_still_and_video(dir, '/overlayed_avg_accuracy.png', v_sig_index, s_sig_index, windows_val, v_vals,
-                                      s_vals)
+            overlay(files[0],files[1])
         else:
             print("Error: No files were found")
 

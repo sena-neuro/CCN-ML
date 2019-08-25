@@ -56,7 +56,20 @@ def plot_confusion_matrix(cm, classes,
     return fig, ax
 
 
-def visualize(dir, name, sig_index, windows_val, vals):
+def visualize(dir, name, sig_index, windows, avg_values):
+    vals = [x[-1] for x in avg_values]
+
+    # decide on time
+    windows_val = [2 * (x - 100) for x in [int(wind_frame.strip('()').split(',')[0])
+                                           for wind_frame in windows]]
+
+    # take average accuracies from avg list
+    # avg lists are in the form : [[time_window, accuracy]]
+    # so 2-dim lists where in the inner list
+    # first element is the time window (in a string)
+    # and the second element is the accuracy
+    vals = [x[-1] for x in avg_values]
+
     fig, ax = plt.subplots()
     ax.plot(windows_val, vals)
 
@@ -75,7 +88,19 @@ def visualize(dir, name, sig_index, windows_val, vals):
     plt.close()
 
 
-def visualize_still_and_video(dir, name, v_sig_index, s_sig_index, windows_val, v_vals, s_vals):
+def visualize_still_and_video(dir, name, v_sig_index, s_sig_index, windows, v_avg, s_avg):
+    # decide on time
+    windows_val = [2 * (x - 100) for x in [int(wind_frame.strip('()').split(',')[0])
+                                           for wind_frame in windows]]
+
+    # take average accuracies from avg list
+    # avg lists are in the form : [[time_window, accuracy]]
+    # so 2-dim lists where in the inner list
+    # first element is the time window (in a string)
+    # and the second element is the accuracy
+    v_vals = [x[-1] for x in v_avg]
+    s_vals = [x[-1] for x in s_avg]
+
     fig, ax = plt.subplots()
     ax.plot(windows_val, v_vals, 'g', label="Video")
     ax.plot(windows_val, s_vals, 'b', label='Still')
