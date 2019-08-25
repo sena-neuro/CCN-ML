@@ -2,13 +2,14 @@
 .*/
 .idea/
 .ipynb_checkpoints/*
+*/__pycache__/
 __pycache__/
 *.py[cod]
 *$py.class
-
+code/.DS_Store
 # C extensions
 *.so
-
+.idea/
 # Distribution / packaging
 .Python
 build/
