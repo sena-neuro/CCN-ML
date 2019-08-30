@@ -4,7 +4,7 @@ import scipy.io as sio
 
 # Reject a subject if a files trial number is less thatn 120 * %20 or %30
 def create_windowed_data(filenames, timeframe_start, timeframe_end, size, min_trials,
-                         channels_start=0, channels_end=62, trials_start=0, trials_end="end"):
+                         channels_start=0, channels_end=60, trials_start=0, trials_end="end"):
     """
         This method creates windowing for each of the channels put to it.
         It is the algorithm which allows comparison between the time trials. 

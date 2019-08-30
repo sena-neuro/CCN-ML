@@ -3,10 +3,12 @@
 # for i in /data2/s*.mat
 # paths for the server "/auto/data2/ser/Data/Video/" "/auto/data2/oelmas/EEG_AgentPerception_NAIVE/Analysis/Experiments /"
 # paths for huseyin's computer  "/Users/huseyinelmas/Desktop/data/Video/" "/Users/huseyinelmas/Desktop/Experiments/$i/"
+# paths for doren's computer "/home/user/Desktop/EEG_data/Static/" "/home/user/Desktop/EEG_results/$i/"
 
-Exps=("E40w20s" "E25w25s" "E20w20s" "E10w10s" "E5w5s")
+Exps=("E80w40s") # "E25w25s" "E20w20s" "E10w10s" "E5w5s")
 declare -A params
 
+params["E80w40s"]="80 40"
 params["E40w20s"]="40 20"
 params["E25w25s"]="25 25"
 params["E20w20s"]="20 20"
@@ -20,10 +22,10 @@ type1="Video"
 type2="Still"
 for i in "${Exps[@]}"; do
     echo Experiment $i is started
-    in_path="/auto/data2/ser/Data/Video/"
-    sv_path="/auto/data2/oelmas/EEG_AgentPerception_NAIVE/Analysis/Experiments/$i/"
+    in_path="/home/user/Desktop/EEG_data/"
+    sv_path="/home/user/Desktop/EEG_results/$i/"
     mkdir -p  $sv_path
-    python ccn_wo_prior_main.py "$start" "$end" ${params[$i]} "$minTrial" "$in_path$type1/"  "$sv_path" "$type1"
+    #python ccn_wo_prior_main.py "$start" "$end" ${params[$i]} "$minTrial" "$in_path$type1/"  "$sv_path" "$type1"
     python ccn_wo_prior_main.py "$start" "$end" ${params[$i]} "$minTrial" "$in_path$type2/"  "$sv_path" "$type2"
 done
 echo Classification is done
