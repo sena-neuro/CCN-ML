@@ -120,10 +120,12 @@ def choose( folder_list):
         return
     
     else:
-        avg_vals, eeg_sliced = read_and_prepare_data(folders[subdir])
-        s, w, v = analyze(avg_vals, eeg_sliced)
+        avg_values, eeg_sliced = read_and_prepare_data(folders[subdir])
+        sig_index = compare_with_chance_level(eeg_sliced)
+
+        windows = list(eeg_sliced.keys())
         dir = os.path.dirname(folders[subdir])  ## directory of file
-        ccn_visualization.visualize(dir, s, w, v)
+        ccn_visualization.visualize(dir, '/avg_accuracy.png', sig_index, windows, avg_values)
 
 
 def overlay(video_path, still_path):
@@ -152,10 +154,12 @@ def run_all(folder_list, overlaying=False):
         folders = glob.glob(each + "*/accuracy_results.json")
         for each_subdir in folders:
             #print(each_subdir)
-            avg_values, info_storage = read_and_prepare_data(each_subdir)
-            s, w, v = analyze(avg_values, info_storage)
+            avg_values, eeg_sliced = read_and_prepare_data(each_subdir)
+            sig_index = compare_with_chance_level(eeg_sliced)
+
+            windows = list(eeg_sliced.keys())
             dir = os.path.dirname(each_subdir)  ## directory of file
-            ccn_visualization.visualize(dir, s, w, v)
+            ccn_visualization.visualize(dir, '/avg_accuracy.png', sig_index, windows, avg_values)
 
 def overlay_all(main_folder_path):
     # name of folders to take the information from
@@ -172,4 +176,3 @@ def overlay_all(main_folder_path):
 
 if __name__ == "__main__":
     overlay_all("/home/sena/Desktop/Experiments/")
-
