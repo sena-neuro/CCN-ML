@@ -14,17 +14,13 @@ def plot_confusion_matrix(cm, classes,
     Normalization can be applied by setting `normalize=True`.
     """
     cm = np.asarray(cm)
-    if not title:
-        if normalize:
-            title = 'Normalized confusion matrix'
-        else:
-            title = 'Confusion matrix, without normalization'
+    if normalize:
+        title += ", normalized"
+    else:
+        title += ", without normalization"
 
     if normalize:
         cm = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
-        print("Normalized confusion matrix")
-    else:
-        print('Confusion matrix, without normalization')
 
 
     fig, ax = plt.subplots()
@@ -88,7 +84,7 @@ def visualize(dir, name, sig_index, windows, avg_values):
     plt.close()
 
 
-def visualize_still_and_video(dir, name, v_sig_index, s_sig_index, windows, v_avg, s_avg):
+def visualize_still_and_video(save_dir, name, v_sig_index, s_sig_index, windows, v_avg, s_avg):
     # decide on time
     windows_val = [2 * (x - 100) for x in [int(wind_frame.strip('()').split(',')[0])
                                            for wind_frame in windows]]
@@ -117,8 +113,8 @@ def visualize_still_and_video(dir, name, v_sig_index, s_sig_index, windows, v_av
 
     ax.legend(loc='upper right')
     ax.set_title('Classification accuracies')  # If we really want to, we can get
-    # the window size and shift from the data
 
-    fig.savefig(dir + name, bbox_inches='tight')
+    # the window size and shift from the data
+    fig.savefig(save_dir + name, bbox_inches='tight')
     plt.clf()
     plt.close()

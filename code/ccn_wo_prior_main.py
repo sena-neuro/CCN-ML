@@ -1,6 +1,9 @@
+import pathlib
+
 import ccn_algorithms
 import ccn_ml
 import ccn_preprocess
+import ccn_stats
 import ccn_visualization
 import matplotlib as mpl
 import numpy as np
@@ -13,7 +16,6 @@ import json
 from sklearn.metrics import confusion_matrix
 
 
-# TODO: M
 # Generalized Pipeline
 # Currently, only SVC is available.
 # kernel parameter is only applicable when the method is SVC.
@@ -43,8 +45,8 @@ def generalized_pipeline(subjFileList, start, end, window_size, window_shift, mi
 
             accuracies.append(accuracy)
             time_ranges.append(time)
-    if verbose:
-        print(accuracies)
+            if verbose:
+                print(accuracy)
     return accuracies, time_ranges, cms
 
 
@@ -127,13 +129,17 @@ def main():
                 results_dict[subjList[subjectNo] + 'accuracy_results'] = subj_acc_dict
                 results_dict[subjList[subjectNo] + 'cms'] = subj_cm_dict
 
+                # Create target Directory if don't exist
+                if not os.path.exists(args.save_path + "confusion_matrices/"):
+                    os.mkdir(args.save_path + "confusion_matrices/")
+
                 # Plot and save the plot of each confusion matrix in cms. Might also draw only some cms
                 for time_range, cm in subj_cm_dict.items():
                     ccn_visualization.plot_confusion_matrix(
-                        cm, classes, title = " Confusion Matrix of Subject Time Window: " + subjList[subjectNo]
+                        cm, classes, normalize=True, title = " Confusion Matrix of : " + subjList[subjectNo]
                                              +"\n On time window "+ time_range)
                     plt.savefig(
-                        args.save_path + args.input_type + "_" +
+                        args.save_path + "confusion_matrices/" +args.input_type + "_" +
                         time_range + "_" + subjList[subjectNo] + "_cm.png",
                             bbox_inches='tight')
                     plt.clf()
@@ -176,17 +182,23 @@ def main():
             ccn_visualization.plot_confusion_matrix(
                 cm, classes,
                 title = " Average Confusion Matrix On Time Window: " + time_range, avg=True)
-            plt.savefig(args.save_path + args.input_type + "_" + time_range +'_avg_cm.png',
+            plt.savefig(args.save_path + "confusion_matrices/" + args.input_type + "_" + time_range +'_avg_cm.png',
                         bbox_inches='tight')
-            plt.savefig(
-                args.save_path + args.input_type + "_" +
-                time_range + "_avg_cm.png",
-                bbox_inches='tight')
             plt.clf()
             plt.close()
         filename = args.save_path + args.input_type+ '_accuracy_results.json'
         with open(filename, 'w') as f:
             json.dump(results_dict, f)
+
+    # Get the main path of experiments from save path
+    exp_path = pathlib.PurePath(args.save_path)
+
+    # Give this path to the statistic module as main path
+    parent_path = str(exp_path.parent)
+    print(type(parent_path))
+    ccn_stats.overlay_all(parent_path + "/")
+
+
 
 
 if __name__ == '__main__':

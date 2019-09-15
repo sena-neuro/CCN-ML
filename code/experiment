@@ -1,30 +1,29 @@
 #!/usr/bin/env bash
 
 # for i in /data2/s*.mat
-# paths for the server "/auto/data2/ser/Data/Video/" "/auto/data2/oelmas/EEG_AgentPerception_NAIVE/Analysis/Experiments /"
-# paths for huseyin's computer  "/Users/huseyinelmas/Desktop/data/Video/" "/Users/huseyinelmas/Desktop/Experiments/$i/"
+# paths for the server "/auto/data2/ser/Data/" "/auto/data2/oelmas/EEG_AgentPerception_NAIVE/Analysis/Experiments/"
+# paths for huseyin's computer  "/Users/huseyinelmas/Desktop/data/" "/Users/huseyinelmas/Desktop/Experiments/$i/"
 
 Exps=("E40w20s" "E25w25s" "E20w20s" "E10w10s" "E5w5s")
 declare -A params
-
-params["E40w20s"]="40 20"
-params["E25w25s"]="25 25"
-params["E20w20s"]="20 20"
-params["E10w10s"]="10 10"
-params["E5w5s"]="5 5"
+params["E40w20s"]="40 20 --gridsearch --verbose"
+params["E25w25s"]="25 25 --gridsearch --verbose"
+params["E20w20s"]="20 20 --gridsearch --verbose"
+params["E10w10s"]="10 10 --gridsearch --verbose"
+params["E5w5s"]="5 5 --gridsearch --verbose"
 
 start="0"
 end="400"
-minTrial="84"
+minTrial="0"
 type1="Video"
 type2="Still"
 for i in "${Exps[@]}"; do
     echo Experiment $i is started
-    in_path="/auto/data2/ser/Data/Video/"
-    sv_path="/auto/data2/oelmas/EEG_AgentPerception_NAIVE/Analysis/Experiments/$i/"
-    mkdir -p  $sv_path
-    python ccn_wo_prior_main.py "$start" "$end" ${params[$i]} "$minTrial" "$in_path$type1/"  "$sv_path" "$type1"
-    python ccn_wo_prior_main.py "$start" "$end" ${params[$i]} "$minTrial" "$in_path$type2/"  "$sv_path" "$type2"
+    in_path="/auto/data2/ser/Data/"
+    sv_path="/auto/data2/oelmas/EEG_AgentPerception_NAIVE/Analysis/Experiments/"
+    mkdir -p  "$sv_path$i"
+    python ccn_wo_prior_main.py "$start" "$end" ${params[$i]} "$minTrial" "$in_path$type1/"  "$sv_path$i/" "$type1"
+    python ccn_wo_prior_main.py "$start" "$end" ${params[$i]} "$minTrial" "$in_path$type2/"  "$sv_path$i/" "$type2"
 done
 echo Classification is done
 
