@@ -211,3 +211,6 @@ def overlay_all(main_folder_path):  # The main folder's path which includes all 
             overlay(video_file_path, still_file_path)
         else:
             print("Error: There needs to be at least two json files")
+
+if __name__ == '__main__':
+    overlay_all('/Users/huseyinelmas/Desktop/Experiments/test_stats/')

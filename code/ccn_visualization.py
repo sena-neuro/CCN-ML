@@ -3,7 +3,7 @@ import matplotlib as mpl
 mpl.use('Agg')
 import matplotlib.pyplot as plt
 import numpy as np
-
+from itertools import compress
 def plot_confusion_matrix(cm, classes,
                           normalize=False,
                           title=None,
@@ -102,10 +102,10 @@ def visualize_still_and_video(save_dir, name, v_sig_index, s_sig_index, windows,
     ax.plot(windows_val, s_vals, 'b', label='Still')
 
     # print(windows_val)
-    ax.plot([windows_val[x] for x in v_sig_index], [v_vals[x] for x in v_sig_index],
+    ax.plot(list(compress(windows_val,v_sig_index)), list(compress(v_vals, v_sig_index)),
             linestyle="none", color='r', marker='o')
-    ax.plot([windows_val[x] for x in s_sig_index], [s_vals[x] for x in s_sig_index],
-            linestyle="none", color='r', marker='o')
+    ax.plot(list(compress(windows_val, s_sig_index)), list(compress(s_vals, s_sig_index)),
+           linestyle="none", color='r', marker='o')
 
     # show starting understanding and chance level
     ax.axvline(x=0, color='black', alpha=0.5, linestyle='--', label='end of baseline period')
