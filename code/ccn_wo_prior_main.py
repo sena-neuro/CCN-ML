@@ -134,16 +134,16 @@ def main():
                     os.mkdir(args.save_path + "confusion_matrices/")
 
                 # Plot and save the plot of each confusion matrix in cms. Might also draw only some cms
-                for time_range, cm in subj_cm_dict.items():
-                    ccn_visualization.plot_confusion_matrix(
-                        cm, classes, normalize=True, title = " Confusion Matrix of : " + subjList[subjectNo]
-                                             +"\n On time window "+ time_range)
-                    plt.savefig(
-                        args.save_path + "confusion_matrices/" +args.input_type + "_" +
-                        time_range + "_" + subjList[subjectNo] + "_cm.png",
-                            bbox_inches='tight')
-                    plt.clf()
-                    plt.close()
+                #for time_range, cm in subj_cm_dict.items():
+                 #   ccn_visualization.plot_confusion_matrix(
+                 #       cm, classes, normalize=True, title = " Confusion Matrix of : " + subjList[subjectNo]
+                  #                           +"\n On time window "+ time_range)
+                  #  plt.savefig(
+                   #     args.save_path + "confusion_matrices/" +args.input_type + "_" +
+                    #    time_range + "_" + subjList[subjectNo] + "_cm.png",
+                     #       bbox_inches='tight')
+                    #plt.clf()
+                    #plt.close()
 
                 # Plot and save the accuracy graph per subject
                 plt.plot(time_ranges, acc)
@@ -167,12 +167,15 @@ def main():
     # store in the end
     print("{} subjects survived trial rejection".format(survivingSubjects))
     if survivingSubjects != 0:
+        total_cms = np.sum(np.array(cm_mat), axis=0)
         avg_cms = np.mean(np.array(cm_mat), axis=0)
         avg_accuracies = np.mean(np.array(acc_mat), axis=0).tolist()
         results_dict['avg_accuracies'] = {str((range_start, range_start + args.w_size)): avg_accuracies[i] for
                                           i, range_start in enumerate(time_ranges)}
-        results_dict['avg_cm'] = {str((range_start, range_start + args.w_size)): avg_cms[i].tolist() for
+        results_dict['total_cm'] = {str((range_start, range_start + args.w_size)): total_cms[i].tolist() for
                                         i, range_start in enumerate(time_ranges)}
+        results_dict['avg_cm'] = {str((range_start, range_start + args.w_size)): avg_cms[i].tolist() for
+                                  i, range_start in enumerate(time_ranges)}
         # plot found results
         plt.plot(time_ranges, avg_accuracies)
         plt.savefig(args.save_path+ args.input_type +'_avg_accuracy.png', bbox_inches='tight')
@@ -183,6 +186,14 @@ def main():
                 cm, classes,
                 title = " Average Confusion Matrix On Time Window: " + time_range, avg=True)
             plt.savefig(args.save_path + "confusion_matrices/" + args.input_type + "_" + time_range +'_avg_cm.png',
+                        bbox_inches='tight')
+            plt.clf()
+            plt.close()
+        for time_range, cm in results_dict['total_cm'].items():
+            ccn_visualization.plot_confusion_matrix(
+                cm, classes,
+                title=" Average Confusion Matrix On Time Window: " + time_range, avg=True)
+            plt.savefig(args.save_path + "confusion_matrices/" + args.input_type + "_" + time_range + '_total_cm.png',
                         bbox_inches='tight')
             plt.clf()
             plt.close()
