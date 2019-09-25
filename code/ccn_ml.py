@@ -44,13 +44,12 @@ def svc(x_train, y_train, x_test, y_test, gridsearch=True, verbose=False, kernel
         svc = SVC(kernel=kernel)
         svc.fit(x_train, y_train)
 
+    y_pred = svc.predict(x_test)
     if verbose:
         print("Detailed classification report: \n")
         print("The model is trained on the full development set.\n")
         print("The scores are computed on the full evaluation set.\n")
-        y_true, y_pred = y_test, svc.predict(x_test)
-        print(metrics.classification_report(y_true, y_pred))
+        print(metrics.classification_report(y_test, y_pred))
 
-    y_pred = svc.predict(x_test)
     accuracy = accuracy_score(y_test, y_pred)
     return accuracy, y_pred
