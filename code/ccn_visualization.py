@@ -3,6 +3,7 @@ import matplotlib as mpl
 mpl.use('Agg')
 import matplotlib.pyplot as plt
 import numpy as np
+from itertools import compress
 
 def plot_confusion_matrix(cm, classes,
                           normalize=False,
@@ -14,17 +15,13 @@ def plot_confusion_matrix(cm, classes,
     Normalization can be applied by setting `normalize=True`.
     """
     cm = np.asarray(cm)
-    if not title:
-        if normalize:
-            title = 'Normalized confusion matrix'
-        else:
-            title = 'Confusion matrix, without normalization'
+    if normalize:
+        title += ", normalized"
+    else:
+        title += ", without normalization"
 
     if normalize:
         cm = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
-        print("Normalized confusion matrix")
-    else:
-        print('Confusion matrix, without normalization')
 
 
     fig, ax = plt.subplots()
@@ -56,7 +53,20 @@ def plot_confusion_matrix(cm, classes,
     return fig, ax
 
 
-def visualize(dir, name, sig_index, windows_val, vals):
+def visualize(dir, name, sig_index, windows, avg_values):
+    vals = [x[-1] for x in avg_values]
+
+    # decide on time
+    windows_val = [2 * (x - 100) for x in [int(wind_frame.strip('()').split(',')[0])
+                                           for wind_frame in windows]]
+
+    # take average accuracies from avg list
+    # avg lists are in the form : [[time_window, accuracy]]
+    # so 2-dim lists where in the inner list
+    # first element is the time window (in a string)
+    # and the second element is the accuracy
+    vals = [x[-1] for x in avg_values]
+
     fig, ax = plt.subplots()
     ax.plot(windows_val, vals)
 
@@ -75,16 +85,28 @@ def visualize(dir, name, sig_index, windows_val, vals):
     plt.close()
 
 
-def visualize_still_and_video(dir, name, v_sig_index, s_sig_index, windows_val, v_vals, s_vals):
+def visualize_still_and_video(save_dir, name, v_sig_index, s_sig_index, windows, v_avg, s_avg):
+    # decide on time
+    windows_val = [2 * (x - 100) for x in [int(wind_frame.strip('()').split(',')[0])
+                                           for wind_frame in windows]]
+
+    # take average accuracies from avg list
+    # avg lists are in the form : [[time_window, accuracy]]
+    # so 2-dim lists where in the inner list
+    # first element is the time window (in a string)
+    # and the second element is the accuracy
+    v_vals = [x[-1] for x in v_avg]
+    s_vals = [x[-1] for x in s_avg]
+
     fig, ax = plt.subplots()
     ax.plot(windows_val, v_vals, 'g', label="Video")
     ax.plot(windows_val, s_vals, 'b', label='Still')
 
     # print(windows_val)
-    ax.plot([windows_val[x] for x in v_sig_index], [v_vals[x] for x in v_sig_index],
+    ax.plot(list(compress(windows_val,v_sig_index)), list(compress(v_vals, v_sig_index)),
             linestyle="none", color='r', marker='o')
-    ax.plot([windows_val[x] for x in s_sig_index], [s_vals[x] for x in s_sig_index],
-            linestyle="none", color='r', marker='o')
+    ax.plot(list(compress(windows_val, s_sig_index)), list(compress(s_vals, s_sig_index)),
+           linestyle="none", color='r', marker='o')
 
     # show starting understanding and chance level
     ax.axvline(x=0, color='black', alpha=0.5, linestyle='--', label='end of baseline period')
@@ -92,8 +114,8 @@ def visualize_still_and_video(dir, name, v_sig_index, s_sig_index, windows_val, 
 
     ax.legend(loc='upper right')
     ax.set_title('Classification accuracies')  # If we really want to, we can get
-    # the window size and shift from the data
 
-    fig.savefig(dir + name, bbox_inches='tight')
+    # the window size and shift from the data
+    fig.savefig(save_dir + name, bbox_inches='tight')
     plt.clf()
     plt.close()

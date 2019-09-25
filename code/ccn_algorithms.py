@@ -25,6 +25,7 @@ def create_windowed_data(filenames, timeframe_start, timeframe_end, size, min_tr
             class_type = list(content.keys())[index[0]]
         data_x = np.asarray(content[class_type])
         wind_start = timeframe_start
+
         label = None
         if filename.find('human') >= 0:
             label = 0
