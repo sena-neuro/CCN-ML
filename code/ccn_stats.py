@@ -41,6 +41,8 @@ def read_and_prepare_data(file):
     avg_accuracies = [[k, v] for k, v in data['avg_accuracies'].items()]
     del (data['avg_accuracies'])
 
+    target_labels = data['target_labels']
+
     # keys for json object
     subjects = [key for key in data.keys() if key.endswith('accuracy_results')]
     windows = list(data[subjects[0]].keys())
@@ -55,7 +57,7 @@ def read_and_prepare_data(file):
         for subject in subjects:
             eeg_sliced[window].append(data[subject][window])
 
-    return avg_accuracies, eeg_sliced
+    return avg_accuracies, eeg_sliced, target_labels
 
 
 def compare_with_chance_level(vector1):
@@ -146,13 +148,16 @@ def choose(folder_list):
 def overlay(video_path, still_path):
     "Takes paths to results json of video and still input experiments, and overlays the significance analysis"
 
-    v_avg_vals, v_eeg_sliced = read_and_prepare_data(video_path)
+    v_avg_vals, v_eeg_sliced, v_target_labels = read_and_prepare_data(video_path)
     v_sig_index = compare_with_chance_level(v_eeg_sliced)
 
-    s_avg_vals, s_eeg_sliced = read_and_prepare_data(still_path)
+    s_avg_vals, s_eeg_sliced, s_target_labels = read_and_prepare_data(still_path)
     s_sig_index = compare_with_chance_level(s_eeg_sliced)
 
     v_eeg_windows = list(v_eeg_sliced.keys())
+
+    if v_target_labels != s_target_labels:
+        raise Exception('Still and window targets are not equal e.g human android vs human robot')
 
     # Check if video and still files have the same windows, otherwise t-test would be wrong
     if v_eeg_windows != list(s_eeg_sliced.keys()):
@@ -167,7 +172,7 @@ def overlay(video_path, still_path):
         print("at experiment: "+ experiment_name)
 
     save_dir = os.path.dirname(video_path)  ## directory of file
-    ccn_visualization.visualize_still_and_video(save_dir, '/overlayed_avg_accuracy.png', v_sig_index, s_sig_index, v_eeg_windows,
+    ccn_visualization.visualize_still_and_video(save_dir, v_target_labels + '_overlayed_avg_accuracy.png', v_sig_index, s_sig_index, v_eeg_windows,
                                                 v_avg_vals, s_avg_vals)
 
 
@@ -213,4 +218,4 @@ def overlay_all(main_folder_path):  # The main folder's path which includes all 
             print("Error: There needs to be at least two json files")
 
 if __name__ == '__main__':
-    overlay_all('/Users/huseyinelmas/Desktop/Experiments/test_stats/')
+    overlay_all('/Users/huseyinelmas/Desktop/Experiments/desktop_experiments/')

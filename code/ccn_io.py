@@ -46,7 +46,7 @@ def read_txt(fname = "data/EEG Eye State.txt"):
 		content = np.array(content, dtype = 'float32')
 
 		# Shuffling the dataset
-		random.shuffle(content)
+		np.random.shuffle(content)
 		x = content[:, :-1]
 		y = np.array(content[:, -1], dtype = 'int32')
 		return x,y
@@ -86,7 +86,7 @@ if __name__ == "__main__":
 		print("    read_file() works.\n")
 		
 	print("Trying read_mne()!\n")
-	content    = read_mne("data/sample_audvis_meg_raw.fif")
+	read_mne("data/sample_audvis_meg_raw.fif")
 	if content != None:
 		print("    read_mne() works.\n")
 		print("Trying read_mne()!\n")
@@ -97,7 +97,7 @@ if __name__ == "__main__":
 		print("    read_txt() works.\n")
 		
 	print("Trying print_mat_nested()!\n")
-	content    = print_mat_nested("data/human_motion_epochs.mat")
+	print_mat_nested("data/human_motion_epochs.mat")
 	if content != None:
 		print("    print_mat_nested() works.\n")
 

@@ -1,9 +1,11 @@
 # plotting
 import matplotlib as mpl
+
 mpl.use('Agg')
 import matplotlib.pyplot as plt
 import numpy as np
 from itertools import compress
+
 
 def plot_confusion_matrix(cm, classes,
                           normalize=False,
@@ -22,7 +24,6 @@ def plot_confusion_matrix(cm, classes,
 
     if normalize:
         cm = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
-
 
     fig, ax = plt.subplots()
     im = ax.imshow(cm, interpolation='nearest', cmap=cmap)
@@ -103,10 +104,10 @@ def visualize_still_and_video(save_dir, name, v_sig_index, s_sig_index, windows,
     ax.plot(windows_val, s_vals, 'b', label='Still')
 
     # print(windows_val)
-    ax.plot(list(compress(windows_val,v_sig_index)), list(compress(v_vals, v_sig_index)),
+    ax.plot(list(compress(windows_val, v_sig_index)), list(compress(v_vals, v_sig_index)),
             linestyle="none", color='r', marker='o')
     ax.plot(list(compress(windows_val, s_sig_index)), list(compress(s_vals, s_sig_index)),
-           linestyle="none", color='r', marker='o')
+            linestyle="none", color='r', marker='o')
 
     # show starting understanding and chance level
     ax.axvline(x=0, color='black', alpha=0.5, linestyle='--', label='end of baseline period')
@@ -116,6 +117,6 @@ def visualize_still_and_video(save_dir, name, v_sig_index, s_sig_index, windows,
     ax.set_title('Classification accuracies')  # If we really want to, we can get
 
     # the window size and shift from the data
-    fig.savefig(save_dir + name, bbox_inches='tight')
+    fig.savefig(save_dir + '/' + name, bbox_inches='tight')
     plt.clf()
     plt.close()
