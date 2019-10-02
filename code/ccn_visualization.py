@@ -54,7 +54,7 @@ def plot_confusion_matrix(cm, classes,
     return fig, ax
 
 
-def visualize(dir, name, sig_index, windows, avg_values):
+def visualize(dir, name, sig_index, windows, avg_values, chance_level):
     vals = [x[-1] for x in avg_values]
 
     # decide on time
@@ -76,7 +76,7 @@ def visualize(dir, name, sig_index, windows, avg_values):
 
     # show starting understanding and chance level
     ax.axvline(x=0, color='black', alpha=0.5, linestyle='--', label='end of baseline period')
-    ax.axhline(y=0.33, color='red', alpha=0.5, label='chance level')
+    ax.axhline(y=chance_level, color='red', alpha=0.5, label='chance level')
 
     ax.legend(loc='upper right')
     ax.set_title('Classification accuracies')
@@ -86,7 +86,7 @@ def visualize(dir, name, sig_index, windows, avg_values):
     plt.close()
 
 
-def visualize_still_and_video(save_dir, name, v_sig_index, s_sig_index, windows, v_avg, s_avg):
+def visualize_still_and_video(save_dir, name, v_sig_index, s_sig_index, windows, v_avg, s_avg, chance_level):
     # decide on time
     windows_val = [2 * (x - 100) for x in [int(wind_frame.strip('()').split(',')[0])
                                            for wind_frame in windows]]
@@ -111,7 +111,7 @@ def visualize_still_and_video(save_dir, name, v_sig_index, s_sig_index, windows,
 
     # show starting understanding and chance level
     ax.axvline(x=0, color='black', alpha=0.5, linestyle='--', label='end of baseline period')
-    ax.axhline(y=0.33, color='red', alpha=0.5, label='chance level')
+    ax.axhline(y=chance_level, color='red', alpha=0.5, label='chance level')
 
     ax.legend(loc='upper right')
     ax.set_title('Classification accuracies')  # If we really want to, we can get

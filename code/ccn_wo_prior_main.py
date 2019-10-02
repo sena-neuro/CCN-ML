@@ -111,7 +111,7 @@ def main():
                 chance_level = 0.333
                 flag = file.endswith('.mat')
             elif args.target_labels == 'hr':
-                flag = file.endswith('android.mat') or file.endswith('human.mat')
+                flag = file.endswith('robot.mat') or file.endswith('human.mat')
             elif args.target_labels == 'ra':
                 flag = file.endswith('android.mat') or file.endswith('robot.mat')
             elif args.target_labels == 'ah':

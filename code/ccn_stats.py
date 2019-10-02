@@ -142,7 +142,7 @@ def choose(folder_list, chance_level):
 
         windows = list(eeg_sliced.keys())
         dir = os.path.dirname(folders[subdir])  ## directory of file
-        ccn_visualization.visualize(dir, '/avg_accuracy.png', sig_index, windows, avg_values)
+        ccn_visualization.visualize(dir, '/avg_accuracy.png', sig_index, windows, avg_values, chance_level)
 
 
 def overlay(video_path, still_path, chance_level):
@@ -173,7 +173,7 @@ def overlay(video_path, still_path, chance_level):
 
     save_dir = os.path.dirname(video_path)  ## directory of file
     ccn_visualization.visualize_still_and_video(save_dir, v_target_labels + '_overlayed_avg_accuracy.png', v_sig_index, s_sig_index, v_eeg_windows,
-                                                v_avg_vals, s_avg_vals)
+                                                v_avg_vals, s_avg_vals, chance_level)
 
 
 def run_all(folder_list, chance_level, overlaying=False):
@@ -187,7 +187,7 @@ def run_all(folder_list, chance_level, overlaying=False):
 
             windows = list(eeg_sliced.keys())
             dir = os.path.dirname(each_subdir)  ## directory of file
-            ccn_visualization.visualize(dir, '/avg_accuracy.png', sig_index, windows, avg_values)
+            ccn_visualization.visualize(dir, '/avg_accuracy.png', sig_index, windows, avg_values, chance_level)
 
 
 def overlay_all(main_folder_path, chance_level):  # The main folder's path which includes all experiments
