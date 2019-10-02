@@ -60,12 +60,12 @@ def read_and_prepare_data(file):
     return avg_accuracies, eeg_sliced, target_labels
 
 
-def compare_with_chance_level(vector1):
+def compare_with_chance_level(vector1, chance_level):
     windows = list(vector1.keys())
 
     ttest_values = []
     for window in windows:
-        ttest_values.append(ttest_1samp(np.asarray(vector1[window]), 0.3333))
+        ttest_values.append(ttest_1samp(np.asarray(vector1[window]),chance_level))
 
     # combine info
     t_values = np.asarray(ttest_values)
@@ -119,7 +119,7 @@ def choose_from_options(list_options, replace_option=""):
     return choice - 1
 
 
-def choose(folder_list):
+def choose(folder_list, chance_level):
     """Choose the accuracies you want to work with."""
 
     # get directory you want to work with
@@ -138,21 +138,21 @@ def choose(folder_list):
 
     else:
         avg_values, eeg_sliced = read_and_prepare_data(folders[subdir])
-        sig_index = compare_with_chance_level(eeg_sliced)
+        sig_index = compare_with_chance_level(eeg_sliced, chance_level)
 
         windows = list(eeg_sliced.keys())
         dir = os.path.dirname(folders[subdir])  ## directory of file
         ccn_visualization.visualize(dir, '/avg_accuracy.png', sig_index, windows, avg_values)
 
 
-def overlay(video_path, still_path):
+def overlay(video_path, still_path, chance_level):
     "Takes paths to results json of video and still input experiments, and overlays the significance analysis"
 
     v_avg_vals, v_eeg_sliced, v_target_labels = read_and_prepare_data(video_path)
-    v_sig_index = compare_with_chance_level(v_eeg_sliced)
+    v_sig_index = compare_with_chance_level(v_eeg_sliced, chance_level)
 
     s_avg_vals, s_eeg_sliced, s_target_labels = read_and_prepare_data(still_path)
-    s_sig_index = compare_with_chance_level(s_eeg_sliced)
+    s_sig_index = compare_with_chance_level(s_eeg_sliced, chance_level)
 
     v_eeg_windows = list(v_eeg_sliced.keys())
 
@@ -176,21 +176,21 @@ def overlay(video_path, still_path):
                                                 v_avg_vals, s_avg_vals)
 
 
-def run_all(folder_list, overlaying=False):
+def run_all(folder_list, chance_level, overlaying=False):
     # Run all the information that is in each folder.
     for each in folder_list:
         folders = glob.glob(each + "*/accuracy_results.json")
         for each_subdir in folders:
             # print(each_subdir)
             avg_values, eeg_sliced = read_and_prepare_data(each_subdir)
-            sig_index = compare_with_chance_level(eeg_sliced)
+            sig_index = compare_with_chance_level(eeg_sliced, chance_level)
 
             windows = list(eeg_sliced.keys())
             dir = os.path.dirname(each_subdir)  ## directory of file
             ccn_visualization.visualize(dir, '/avg_accuracy.png', sig_index, windows, avg_values)
 
 
-def overlay_all(main_folder_path):  # The main folder's path which includes all experiments
+def overlay_all(main_folder_path, chance_level):  # The main folder's path which includes all experiments
     """
 
     :type main_folder_path: string
@@ -213,7 +213,7 @@ def overlay_all(main_folder_path):  # The main folder's path which includes all 
             else:
                 still_file_path = files[1]
                 video_file_path = files[0]
-            overlay(video_file_path, still_file_path)
+            overlay(video_file_path, still_file_path, chance_level)
         else:
             print("Error: There needs to be at least two json files")
 

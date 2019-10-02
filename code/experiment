@@ -5,49 +5,52 @@
 # paths for huseyin's computer  "/Users/huseyinelmas/Desktop/data/" "/Users/huseyinelmas/Desktop/Experiments/"
 
 
-Exps=("E1000w0s")
-#Exps=("E40w20s" "E25w25s" "E20w20s" "E10w10s" "E5w5s")
+Exps=("E40w20s" "E25w25s" "E20w20s" "E10w10s")
 declare -A params
-params["E40w20s"]="100 0 "
-#params["E40w20s"]="40 20 --gridsearch --verbose"
-#params["E25w25s"]="25 25 --gridsearch --verbose"
-#params["E20w20s"]="20 20 --gridsearch --verbose"
-#params["E10w10s"]="10 10 --gridsearch --verbose"
-#params["E5w5s"]="5 5 --gridsearch --verbose"
+params["E40w20s"]="40 20 --gridsearch --verbose"
+params["E25w25s"]="25 25 --gridsearch --verbose"
+params["E20w20s"]="20 20 --gridsearch --verbose"
+params["E10w10s"]="10 10 --gridsearch --verbose"
 
 start="0"
 end="400"
-minTrial="0"
+minTrial="84"
 type1="Video"
 type2="Still"
 human_robot="hr"
 android_human="ah"
 robot_android="ra"
 human_robot_android="hra"
+in_path="/auto/data2/ser/Data/"
+sv_path="/auto/data2/oelmas/EEG_AgentPerception_NAIVE/Analysis/Experiments/"
 for i in "${Exps[@]}"; do
-    echo Experiment $i is started
-    in_path="/Users/huseyinelmas/Desktop/data/"
-    sv_path="/Users/huseyinelmas/Desktop/Experiments/desktop_experiments/"
+    echo ------Experiment $i started------
     mkdir -p  "$sv_path$i#$human_robot_android/"
 
+    echo ------Starting hra------
     # Experiments for human robot android
     python ccn_wo_prior_main.py "$start" "$end" ${params[$i]} "$minTrial" "$in_path$type1/"  "$sv_path$i#$human_robot_android/" "$type1" "$human_robot_android"
     python ccn_wo_prior_main.py "$start" "$end" ${params[$i]} "$minTrial" "$in_path$type2/"  "$sv_path$i#$human_robot_android/" "$type2" "$human_robot_android"
 
-     mkdir -p  "$sv_path$i#$human_robot/"
-     # Experiments for human robot
+    echo ------Starting hr------
+    mkdir -p  "$sv_path$i#$human_robot/"
+    # Experiments for human robot
     python ccn_wo_prior_main.py "$start" "$end" ${params[$i]} "$minTrial" "$in_path$type1/"  "$sv_path$i#$human_robot/" "$type1"  "$human_robot"
     python ccn_wo_prior_main.py "$start" "$end" ${params[$i]} "$minTrial" "$in_path$type2/"  "$sv_path$i#$human_robot/" "$type2"  "$human_robot"
 
+    echo ------Starting ra------
     mkdir -p "$sv_path$i#$robot_android/"
     # Experiments for robot android
     python ccn_wo_prior_main.py "$start" "$end" ${params[$i]} "$minTrial" "$in_path$type1/"  "$sv_path$i#$robot_android/" "$type1"  "$robot_android"
     python ccn_wo_prior_main.py "$start" "$end" ${params[$i]} "$minTrial" "$in_path$type2/"  "$sv_path$i#$robot_android/" "$type2"  "$robot_android"
 
+    echo ------Starting ah------
     mkdir -p "$sv_path$i#$android_human/"
     # Experiments for android human
     python ccn_wo_prior_main.py "$start" "$end" ${params[$i]} "$minTrial" "$in_path$type1/"  "$sv_path$i#$android_human/" "$type1"  "$android_human"
     python ccn_wo_prior_main.py "$start" "$end" ${params[$i]} "$minTrial" "$in_path$type2/"  "$sv_path$i#$android_human/" "$type2"  "$android_human"
+
+    echo ------Experiment $i ended------
 done
 echo Classification is done
 
