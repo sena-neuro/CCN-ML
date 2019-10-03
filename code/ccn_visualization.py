@@ -86,7 +86,7 @@ def visualize(dir, name, sig_index, windows, avg_values, chance_level):
     plt.close()
 
 
-def visualize_still_and_video(save_dir, name, v_sig_index, s_sig_index, windows, v_avg, s_avg, chance_level):
+def visualize_still_and_video(save_dir, name, v_sig_index, s_sig_index, windows, v_avg, s_avg, chance_level, v_sems, s_sems):
     # decide on time
     windows_val = [2 * (x - 100) for x in [int(wind_frame.strip('()').split(',')[0])
                                            for wind_frame in windows]]
@@ -108,6 +108,12 @@ def visualize_still_and_video(save_dir, name, v_sig_index, s_sig_index, windows,
             linestyle="none", color='r', marker='o')
     ax.plot(list(compress(windows_val, s_sig_index)), list(compress(s_vals, s_sig_index)),
             linestyle="none", color='r', marker='o')
+
+    # Video error bars
+    ax.errorbar(x=windows_val, y=v_vals, yerr=v_sems, capsize=5)
+
+    # Still error bars
+    ax.errorbar(x=windows_val, y=s_vals, yerr=s_sems, capsize=5)
 
     # show starting understanding and chance level
     ax.axvline(x=0, color='black', alpha=0.5, linestyle='--', label='end of baseline period')

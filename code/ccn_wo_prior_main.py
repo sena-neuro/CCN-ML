@@ -55,6 +55,7 @@ def main():
     acc_mat = []
     cm_mat = []
     classes = ['human', 'android', 'robot']
+    chance_level = 0.5
     parser = argparse.ArgumentParser(
         description="For each subject data, divide  to windows with specified size and shift.\n"
                     "Run classification on each window and find accuracies for each window\n "
@@ -86,7 +87,9 @@ def main():
                              "e.g if hr is entered only human and robot mat files will be"
                              "used for input")
 
+
     args = parser.parse_args()
+
     dataFileList = []
     subjFileList = []
     print(args)
@@ -104,11 +107,9 @@ def main():
         files = [name for name in os.listdir(file_pth)]
 
         flag = False
-        chance_level = 0.5
         # get the mat files
         for file in files:
             if args.target_labels == 'hra':
-                chance_level = 0.333
                 flag = file.endswith('.mat')
             elif args.target_labels == 'hr':
                 flag = file.endswith('robot.mat') or file.endswith('human.mat')
@@ -221,7 +222,7 @@ def main():
     # Give this path to the statistic module as main path
     parent_path = str(exp_path.parent)
     print(type(parent_path))
-    ccn_stats.overlay_all(parent_path + "/", chance_level)
+    ccn_stats.overlay_all(parent_path + "/")
 
 
 if __name__ == '__main__':

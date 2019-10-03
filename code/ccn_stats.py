@@ -29,6 +29,7 @@ import os
 
 import ccn_visualization
 import numpy  as np
+from scipy.stats import sem
 from scipy.stats import ttest_1samp, ttest_ind
 from statsmodels.sandbox.stats.multicomp import multipletests
 
@@ -42,6 +43,7 @@ def read_and_prepare_data(file):
     del (data['avg_accuracies'])
 
     target_labels = data['target_labels']
+
 
     # keys for json object
     subjects = [key for key in data.keys() if key.endswith('accuracy_results')]
@@ -63,17 +65,21 @@ def read_and_prepare_data(file):
 def compare_with_chance_level(vector1, chance_level):
     windows = list(vector1.keys())
 
-    ttest_values = []
+    p_values = []
+    t_values = []
     for window in windows:
-        ttest_values.append(ttest_1samp(np.asarray(vector1[window]),chance_level))
-
-    # combine info
-    t_values = np.asarray(ttest_values)
-    p_values = [float(i) for i in t_values[:, -1]]
+        t_statistic, p_value = ttest_1samp(vector1[window], chance_level)
+        p_values.append(p_value/2)
+        t_values.append(t_statistic)
 
     # correction
-    p_adjusted = multipletests(p_values, method='bonferroni')[:2]
-    p_adjusted_l = list(map(list, zip(*[x.tolist() for x in p_adjusted])))
+    p_adjusted = multipletests(p_values, method='bonferroni', alpha=0.05)
+
+    # one-tailed
+    for i,t in enumerate(t_values):
+        if t < 0:
+            p_adjusted[0][i] = False
+
 
     # significant indices
     sig_indices = p_adjusted[0]
@@ -119,7 +125,7 @@ def choose_from_options(list_options, replace_option=""):
     return choice - 1
 
 
-def choose(folder_list, chance_level):
+def choose(folder_list):
     """Choose the accuracies you want to work with."""
 
     # get directory you want to work with
@@ -137,7 +143,11 @@ def choose(folder_list, chance_level):
         return
 
     else:
-        avg_values, eeg_sliced = read_and_prepare_data(folders[subdir])
+        avg_values, eeg_sliced, target_labels = read_and_prepare_data(folders[subdir])
+        if target_labels == 'hra':
+            chance_level = 0.333
+        else:
+            chance_level = 0.5
         sig_index = compare_with_chance_level(eeg_sliced, chance_level)
 
         windows = list(eeg_sliced.keys())
@@ -145,19 +155,28 @@ def choose(folder_list, chance_level):
         ccn_visualization.visualize(dir, '/avg_accuracy.png', sig_index, windows, avg_values, chance_level)
 
 
-def overlay(video_path, still_path, chance_level):
+def overlay(video_path, still_path):
     "Takes paths to results json of video and still input experiments, and overlays the significance analysis"
 
     v_avg_vals, v_eeg_sliced, v_target_labels = read_and_prepare_data(video_path)
-    v_sig_index = compare_with_chance_level(v_eeg_sliced, chance_level)
-
     s_avg_vals, s_eeg_sliced, s_target_labels = read_and_prepare_data(still_path)
-    s_sig_index = compare_with_chance_level(s_eeg_sliced, chance_level)
-
     v_eeg_windows = list(v_eeg_sliced.keys())
+
+    # Calculate standard error of the mean for each window
+    v_sems = [sem(v_subj_acc_list) for window, v_subj_acc_list in v_eeg_sliced.items()]
+    s_sems = [sem(s_subj_acc_list) for window, s_subj_acc_list in s_eeg_sliced.items()]
+
 
     if v_target_labels != s_target_labels:
         raise Exception('Still and window targets are not equal e.g human android vs human robot')
+
+    if v_target_labels == 'hra':
+        chance_level = 0.333
+    else:
+        chance_level = 0.5
+
+    v_sig_index = compare_with_chance_level(v_eeg_sliced, chance_level)
+    s_sig_index = compare_with_chance_level(s_eeg_sliced, chance_level)
 
     # Check if video and still files have the same windows, otherwise t-test would be wrong
     if v_eeg_windows != list(s_eeg_sliced.keys()):
@@ -173,16 +192,21 @@ def overlay(video_path, still_path, chance_level):
 
     save_dir = os.path.dirname(video_path)  ## directory of file
     ccn_visualization.visualize_still_and_video(save_dir, v_target_labels + '_overlayed_avg_accuracy.png', v_sig_index, s_sig_index, v_eeg_windows,
-                                                v_avg_vals, s_avg_vals, chance_level)
+                                                v_avg_vals, s_avg_vals, chance_level, v_sems, s_sems)
 
 
 def run_all(folder_list, chance_level, overlaying=False):
     # Run all the information that is in each folder.
+
     for each in folder_list:
         folders = glob.glob(each + "*/accuracy_results.json")
         for each_subdir in folders:
             # print(each_subdir)
-            avg_values, eeg_sliced = read_and_prepare_data(each_subdir)
+            avg_values, eeg_sliced, target_labels = read_and_prepare_data(each_subdir)
+            if target_labels == 'hra':
+                chance_level = 0.333
+            else:
+                chance_level = 0.5
             sig_index = compare_with_chance_level(eeg_sliced, chance_level)
 
             windows = list(eeg_sliced.keys())
@@ -190,7 +214,7 @@ def run_all(folder_list, chance_level, overlaying=False):
             ccn_visualization.visualize(dir, '/avg_accuracy.png', sig_index, windows, avg_values, chance_level)
 
 
-def overlay_all(main_folder_path, chance_level):  # The main folder's path which includes all experiments
+def overlay_all(main_folder_path):  # The main folder's path which includes all experiments
     """
 
     :type main_folder_path: string
@@ -213,9 +237,9 @@ def overlay_all(main_folder_path, chance_level):  # The main folder's path which
             else:
                 still_file_path = files[1]
                 video_file_path = files[0]
-            overlay(video_file_path, still_file_path, chance_level)
+            overlay(video_file_path, still_file_path)
         else:
             print("Error: There needs to be at least two json files")
 
 if __name__ == '__main__':
-    overlay_all('/Users/huseyinelmas/Desktop/Experiments/desktop_experiments/')
+    overlay_all('/Users/huseyinelmas/Desktop/Experiments/2wayClassification/')
