@@ -35,7 +35,7 @@ if __name__ == "__main__":
          [1,0,1,0,1],[0,1,0,1,0],[1,0,1,0,1],[0,1,0,1,0]]
     y = [1,0,1,0,1,0,1,0]
     print("Trying generate_stats_data()!\n")
-    content    = generate_stats_data(x,y)
+    content = generate_stats_data(x,y)
     if content != None:
-        print("    generate_stats_data() works.\n")
+        print("generate_stats_data() works.\n")
 
