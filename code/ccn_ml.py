@@ -41,7 +41,7 @@ def svc(x_train, y_train, x_test, y_test, gridsearch=True, verbose=False, kernel
                 print("%0.3f (+/-%0.03f) for %r"
                       % (mean, std * 2, params))
     else:
-        svc = SVC(kernel=kernel)
+        svc = SVC(kernel=kernel, gamma='auto')
         svc.fit(x_train, y_train)
 
     y_pred = svc.predict(x_test)
