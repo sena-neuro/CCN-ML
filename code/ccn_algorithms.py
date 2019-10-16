@@ -16,14 +16,14 @@ def create_windowed_data(filenames, timeframe_start, timeframe_end, size, min_tr
 
     # for each of the files
     for filename in filenames:
+
         # read the contents
         content = sio.loadmat(filename)
-        index = [i for i, s in enumerate(list(content.keys())) if 'subj' in s]
-        if not index:
-            class_type = list(content.keys())[-1] + ''
+        if "eeg_data" in content.keys():
+            key = "eeg_data"
         else:
-            class_type = list(content.keys())[index[0]]
-        data_x = np.asarray(content[class_type])
+            key = list(filter(lambda x: "subj" in x, content.keys()))[0]
+        data_x = np.asarray(content[key])
         wind_start = timeframe_start
 
         label = None
@@ -39,7 +39,7 @@ def create_windowed_data(filenames, timeframe_start, timeframe_end, size, min_tr
         # Check if trial number is below the minTrialLimit
         if data_x.shape[2] < min_trials:
             raise AssertionError("Subject has {} trials for agent {} which is less than minimum "
-            "number of trials specified ({} trials).". format(label, data_x.shape[2], min_trials))
+                                 "number of trials specified ({} trials).".format(label, data_x.shape[2], min_trials))
 
         if trials_end == "end":
             trials_end = data_x.shape[2]
