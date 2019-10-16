@@ -1,4 +1,6 @@
 # plotting
+from textwrap import wrap
+
 import matplotlib as mpl
 
 mpl.use('Agg')
@@ -8,6 +10,7 @@ from itertools import compress
 
 
 def plot_confusion_matrix(cm, classes,
+                          f_name,
                           normalize=False,
                           title=None,
                           avg=False,
@@ -51,10 +54,13 @@ def plot_confusion_matrix(cm, classes,
                     ha="center", va="center",
                     color="white" if cm[i, j] > thresh else "black")
     fig.tight_layout()
-    return fig, ax
+
+    plt.savefig(f_name, bbox_inches='tight')
+    plt.clf()
+    plt.close()
 
 
-def visualize(dir, name, sig_index, windows, avg_values, chance_level):
+def visualize(f_name, sig_index, windows, avg_values, chance_level):
     vals = [x[-1] for x in avg_values]
 
     # decide on time
@@ -81,15 +87,14 @@ def visualize(dir, name, sig_index, windows, avg_values, chance_level):
     ax.legend(loc='upper right')
     ax.set_title('Classification accuracies')
 
-    fig.savefig(dir + name, bbox_inches='tight')
+    fig.savefig(f_name, bbox_inches='tight')
     plt.clf()
     plt.close()
 
-
-def visualize_still_and_video(save_dir, name, v_sig_index, s_sig_index, windows, v_avg, s_avg, chance_level, v_sems, s_sems):
+# TODO clean up visualization arguments
+def visualize_still_and_video(f_name, v_sig_index, s_sig_index, windows_val, v_avg, s_avg, chance_level, v_sems, s_sems, exp_params, error_bar=True):
     # decide on time
-    windows_val = [2 * (x - 100) for x in [int(wind_frame.strip('()').split(',')[0])
-                                           for wind_frame in windows]]
+
 
     # take average accuracies from avg list
     # avg lists are in the form : [[time_window, accuracy]]
@@ -100,8 +105,16 @@ def visualize_still_and_video(save_dir, name, v_sig_index, s_sig_index, windows,
     s_vals = [x[-1] for x in s_avg]
 
     fig, ax = plt.subplots()
-    ax.plot(windows_val, v_vals, 'g', label="Video")
-    ax.plot(windows_val, s_vals, 'b', label='Still')
+    if (error_bar):
+        # Video error bars
+        ax.errorbar(x=windows_val, y=v_vals, yerr=v_sems, capsize=5, label='Video')
+
+        # Still error bars
+        ax.errorbar(x=windows_val, y=s_vals, yerr=s_sems, capsize=5, label='Still')
+    else:
+        # Without errorbars
+        ax.plot(windows_val, v_vals, label="Video")
+        ax.plot(windows_val, s_vals, label='Still')
 
     # print(windows_val)
     ax.plot(list(compress(windows_val, v_sig_index)), list(compress(v_vals, v_sig_index)),
@@ -109,20 +122,32 @@ def visualize_still_and_video(save_dir, name, v_sig_index, s_sig_index, windows,
     ax.plot(list(compress(windows_val, s_sig_index)), list(compress(s_vals, s_sig_index)),
             linestyle="none", color='r', marker='o')
 
-    # Video error bars
-    ax.errorbar(x=windows_val, y=v_vals, yerr=v_sems, capsize=5)
 
-    # Still error bars
-    ax.errorbar(x=windows_val, y=s_vals, yerr=s_sems, capsize=5)
 
     # show starting understanding and chance level
     ax.axvline(x=0, color='black', alpha=0.5, linestyle='--', label='end of baseline period')
     ax.axhline(y=chance_level, color='red', alpha=0.5, label='chance level')
 
+    if ('hra' == exp_params['target_labels']):
+        midtitle = "Classification among Human, Robot and Android agents"
+    elif ('hr' == exp_params['target_labels']):
+        midtitle = "Classification between Human and Robot agents"
+    elif ('ra' in exp_params['target_labels']):
+        midtitle = "Classification between Robot and Android agents"
+    elif ('ah' in exp_params['target_labels']):
+        midtitle = "Classification between Human and Android agents"
+
+    ax.set_xlabel('time (ms)')
+    ax.set_ylabel('classification accuracy')
+
     ax.legend(loc='upper right')
-    ax.set_title('Classification accuracies')  # If we really want to, we can get
+    left_title = "Naive experiment"
+    right_title= "Window size="+str(exp_params['w_size'])+"ms, window shift="+str(exp_params['shift'])+"ms"
+    fig.suptitle(midtitle,fontsize=12, fontweight='bold')
+    ax.set_title("\n".join(wrap(left_title)), fontsize=9,loc='left')
+    ax.set_title("\n".join(wrap(right_title)), fontsize=9, loc='right' )
 
     # the window size and shift from the data
-    fig.savefig(save_dir + '/' + name, bbox_inches='tight')
+    fig.savefig(f_name, bbox_inches='tight')
     plt.clf()
     plt.close()

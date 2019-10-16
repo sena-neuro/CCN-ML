@@ -79,8 +79,12 @@ def main():
                         help='Input of data path of the experiment')
     parser.add_argument('save_path', metavar='output path', type=str,
                         help='Path to save the results of the experiment')
-    parser.add_argument('input_type', type=str, choices=['Still', 'Video'], help="The type of the input still or video")
-
+    parser.add_argument('input_type', type=str, choices=['Still', 'Video'],
+                        help="The type of the input is a still image or a video")
+    parser.add_argument('exp_type', type=str, choices=['Naive', 'Prior'],
+                        help="The type of the experiment, 'Naive' (subjects had not known which agents they would see "
+                             "during the experiment) or 'Prior' (subjects had prior knowledge on the agent "
+                             "categories)")
     parser.add_argument('target_labels', type=str, choices=['hra', 'hr', 'ra', 'ah'],
                         help="h for human, a for android and r for robot,"
                              " to distinguish between 2 way classifications and labels"
@@ -151,14 +155,6 @@ def main():
                 if not os.path.exists(args.save_path + args.target_labels + "_" + "confusion_matrices/"):
                     os.mkdir(args.save_path + args.target_labels + "_" + "confusion_matrices/")
 
-                # Plot and save the accuracy graph per subject
-                plt.plot(time_ranges, acc)
-                plt.savefig(args.save_path + args.input_type + "_" + subjList[subjectNo] + "_" +
-                            args.target_labels + '_accuracy.png',
-                            bbox_inches='tight')
-                plt.clf()
-                plt.close()
-
                 # Create bigger matricies to hold accuracy and cm information for averaging ease
                 acc_mat.append(acc)
                 cm_mat.append(cms)
@@ -186,43 +182,34 @@ def main():
         results_dict['avg_cm'] = {
             str((2 * (range_start - 100), 2 * (range_start + args.w_size - 100))): avg_cms[i].tolist() for
             i, range_start in enumerate(time_ranges)}
-        results_dict['target_labels'] = args.target_labels
+        results_dict['experiment_params'] = {'input_type': args.input_type,
+                                             'exp_type': args.exp_type,
+                                             'w_size': args.w_size,
+                                             'shift': args.shift,
+                                             'start': args.start,
+                                             'end': args.end,
+                                             'target_labels': args.target_labels}
 
-        # plot found results
-        plt.plot(time_ranges, avg_accuracies)
-        plt.savefig(args.save_path + args.input_type + "_" + args.target_labels + '_avg_accuracy.png',
-                    bbox_inches='tight')
-        plt.clf()
-        plt.close()
+        # Visualize confusion matrices
         for time_range, cm in results_dict['avg_cm'].items():
+            f_name = args.save_path + args.target_labels + "_confusion_matrices/" + args.exp_type + "_" + args.input_type + "_" \
+                    + time_range + "_" + args.target_labels + '_avg_cm.png'
             ccn_visualization.plot_confusion_matrix(
-                cm, classes, normalize=True,
+                cm, classes, f_name, normalize=True,
                 title=" Average Confusion Matrix On Time Window: " + time_range)
-            plt.savefig(args.save_path + args.target_labels + "_" + "confusion_matrices/" + args.input_type + "_" +
-                        time_range + "_" + args.target_labels + '_avg_cm.png',
-                        bbox_inches='tight')
-            plt.clf()
-            plt.close()
         for time_range, cm in results_dict['total_cm'].items():
+            f_name = args.save_path + args.target_labels + "_confusion_matrices/" + args.exp_type + "_" + args.input_type + "_" \
+                     + time_range + "_" + args.target_labels + '_total_cm.png'
             ccn_visualization.plot_confusion_matrix(
-                cm, classes, normalize=True,
-                title=" Average Confusion Matrix On Time Window: " + time_range)
-            plt.savefig(args.save_path + args.target_labels + "_" + "confusion_matrices/" + args.input_type + "_" +
-                        time_range + "_" + args.target_labels + '_total_cm.png',
-                        bbox_inches='tight')
-            plt.clf()
-            plt.close()
-        filename = args.save_path + args.input_type + "_" + args.target_labels + '_accuracy_results.json'
+                cm, classes, f_name, normalize=True,
+                title=" Total Confusion Matrix On Time Window: " + time_range)
+
+        filename = args.save_path + "_" + args.exp_type + "_" + args.input_type + "_" + args.target_labels + '_accuracy_results.json'
         with open(filename, 'w') as f:
             json.dump(results_dict, f)
 
     # Get the main path of experiments from save path
     exp_path = pathlib.PurePath(args.save_path)
-
-    # Give this path to the statistic module as main path
-    parent_path = str(exp_path.parent)
-    print(type(parent_path))
-    ccn_stats.overlay_all(parent_path + "/")
 
 
 if __name__ == '__main__':

@@ -42,7 +42,7 @@ def read_and_prepare_data(file):
     avg_accuracies = [[k, v] for k, v in data['avg_accuracies'].items()]
     del (data['avg_accuracies'])
 
-    target_labels = data['target_labels']
+    exp_params = data['experiment_params']
 
 
     # keys for json object
@@ -59,7 +59,7 @@ def read_and_prepare_data(file):
         for subject in subjects:
             eeg_sliced[window].append(data[subject][window])
 
-    return avg_accuracies, eeg_sliced, target_labels
+    return avg_accuracies, eeg_sliced, exp_params
 
 
 def compare_with_chance_level(vector1, chance_level):
@@ -158,19 +158,19 @@ def choose(folder_list):
 def overlay(video_path, still_path):
     "Takes paths to results json of video and still input experiments, and overlays the significance analysis"
 
-    v_avg_vals, v_eeg_sliced, v_target_labels = read_and_prepare_data(video_path)
-    s_avg_vals, s_eeg_sliced, s_target_labels = read_and_prepare_data(still_path)
+    v_avg_vals, v_eeg_sliced, v_exp_params = read_and_prepare_data(video_path)
+    s_avg_vals, s_eeg_sliced, s_exp_params = read_and_prepare_data(still_path)
     v_eeg_windows = list(v_eeg_sliced.keys())
 
     # Calculate standard error of the mean for each window
     v_sems = [sem(v_subj_acc_list) for window, v_subj_acc_list in v_eeg_sliced.items()]
     s_sems = [sem(s_subj_acc_list) for window, s_subj_acc_list in s_eeg_sliced.items()]
 
+    # TODO make a more complete checking
+    if v_exp_params['target_labels'] != s_exp_params['target_labels']:
+        raise Exception('Still and video targets are not the same e.g human android vs human robot')
 
-    if v_target_labels != s_target_labels:
-        raise Exception('Still and window targets are not equal e.g human android vs human robot')
-
-    if v_target_labels == 'hra':
+    if v_exp_params['target_labels'] == 'hra':
         chance_level = 0.333
     else:
         chance_level = 0.5
@@ -190,9 +190,14 @@ def overlay(video_path, still_path):
         print(sig_windows)
         print("at experiment: "+ experiment_name)
 
+    #todo ALSO CORRECT OTHERS WINDOWS->WINDOWS_VAL
+    windows_val = [2 * (x - 100) for x in [int(wind_frame.strip('()').split(',')[0])
+                                           for wind_frame in v_eeg_windows]]
+
+
     save_dir = os.path.dirname(video_path)  ## directory of file
-    ccn_visualization.visualize_still_and_video(save_dir, v_target_labels + '_overlayed_avg_accuracy.png', v_sig_index, s_sig_index, v_eeg_windows,
-                                                v_avg_vals, s_avg_vals, chance_level, v_sems, s_sems)
+    ccn_visualization.visualize_still_and_video(save_dir+'/overlayed_avg_accuracy.png', v_sig_index, s_sig_index, windows_val,
+                                                v_avg_vals, s_avg_vals, chance_level, v_sems, s_sems, v_exp_params)
 
 
 def run_all(folder_list, chance_level, overlaying=False):
@@ -242,4 +247,4 @@ def overlay_all(main_folder_path):  # The main folder's path which includes all 
             print("Error: There needs to be at least two json files")
 
 if __name__ == '__main__':
-    overlay_all('/Users/huseyinelmas/Desktop/Experiments/2wayClassification/')
+    overlay('/home/sena/Desktop/tst/_Naive_Video_hra_accuracy_results.json', '/home/sena/Desktop/tst/_Naive_Still_hra_accuracy_results.json')

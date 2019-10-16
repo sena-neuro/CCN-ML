@@ -57,9 +57,9 @@ def create_windowed_data(filenames, timeframe_start, timeframe_end, size, min_tr
                 vector = data_x[channels_start:channels_end, wind_start: wind_start + size, trial]
                 vector = vector.flatten()
 
-                # check if size is opening any problems
                 if vector.size != (size * (channels_end - channels_start)):
-                    raise ValueError("size is causing problems")
+                    # TODO mantıklı bi error ver
+                    raise ValueError("Ve")
 
                 # add data for ml
                 x.append(vector)
