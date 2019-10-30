@@ -155,49 +155,52 @@ def choose(folder_list):
         ccn_visualization.visualize(dir, '/avg_accuracy.png', sig_index, windows, avg_values, chance_level)
 
 
-def overlay(video_path, still_path):
+def overlay(first_path, second_path):
     "Takes paths to results json of video and still input experiments, and overlays the significance analysis"
 
-    v_avg_vals, v_eeg_sliced, v_exp_params = read_and_prepare_data(video_path)
-    s_avg_vals, s_eeg_sliced, s_exp_params = read_and_prepare_data(still_path)
-    v_eeg_windows = list(v_eeg_sliced.keys())
+    first_avg_vals, first_eeg_sliced, first_exp_params = read_and_prepare_data(first_path)
+    second_avg_vals, second_eeg_sliced, second_exp_params = read_and_prepare_data(second_path)
+    first_eeg_windows = list(first_eeg_sliced.keys())
 
     # Calculate standard error of the mean for each window
-    v_sems = [sem(v_subj_acc_list) for window, v_subj_acc_list in v_eeg_sliced.items()]
-    s_sems = [sem(s_subj_acc_list) for window, s_subj_acc_list in s_eeg_sliced.items()]
+    first_sems = [sem(first_subj_acc_list) for window, first_subj_acc_list in first_eeg_sliced.items()]
+    second_sems = [sem(second_subj_acc_list) for window, second_subj_acc_list in second_eeg_sliced.items()]
 
     # TODO make a more complete checking
-    if v_exp_params['target_labels'] != s_exp_params['target_labels']:
-        raise Exception('Still and video targets are not the same e.g human android vs human robot')
+    if first_exp_params['target_labels'] != second_exp_params['target_labels']:
+        raise Exception('Given targets are not the same e.g human android vs human robot')
 
-    if v_exp_params['target_labels'] == 'hra':
+    if first_exp_params['target_labels'] == 'hra':
         chance_level = 0.333
     else:
         chance_level = 0.5
 
-    v_sig_index = compare_with_chance_level(v_eeg_sliced, chance_level)
-    s_sig_index = compare_with_chance_level(s_eeg_sliced, chance_level)
+    first_sig_index = compare_with_chance_level(first_eeg_sliced, chance_level)
+    second_sig_index = compare_with_chance_level(second_eeg_sliced, chance_level)
 
     # Check if video and still files have the same windows, otherwise t-test would be wrong
-    if v_eeg_windows != list(s_eeg_sliced.keys()):
+    if first_eeg_windows != list(second_eeg_sliced.keys()):
         raise Exception('Still and video window values are not equal')
 
-    sig_list = compare_vectors(v_eeg_sliced, s_eeg_sliced)
-    sig_windows = [v_eeg_windows[index] for index, sig in enumerate(sig_list) if sig]
+    sig_list = compare_vectors(first_eeg_sliced, second_eeg_sliced)
+    sig_windows = [first_eeg_windows[index] for index, sig in enumerate(sig_list) if sig]
     if sig_windows:
-        experiment_name = video_path.split("/")[-2]
-        print("Still and video data is different at windows: ")
+        experiment_name = first_path.split("/")[-2]
+        print(first_exp_params['exp_type'] + "-" + first_exp_params['input_type'] + " and " +
+            second_exp_params['exp_type'] + "-" + second_exp_params['input_type'] )
+        print(" are differing significantly at time windows: ")
         print(sig_windows)
         print("at experiment: "+ experiment_name)
 
     #todo ALSO CORRECT OTHERS WINDOWS->WINDOWS_VAL
     windows_val = [2 * (x - 100) for x in [int(wind_frame.strip('()').split(',')[0])
-                                           for wind_frame in v_eeg_windows]]
+                                           for wind_frame in first_eeg_windows]]
 
 
-    save_dir = os.path.dirname(video_path)  ## directory of file
-    ccn_visualization.visualize_still_and_video(save_dir+'/overlayed_avg_accuracy.png', v_sig_index, s_sig_index, windows_val,
-                                                v_avg_vals, s_avg_vals, chance_level, v_sems, s_sems, v_exp_params)
+    save_dir = os.path.dirname(first_path)  ## directory of file
+    ccn_visualization.visualize_two_curves(save_dir+'/overlayed_avg_accuracy.png', first_sig_index, second_sig_index,
+                                                windows_val, first_avg_vals, second_avg_vals, chance_level,
+                                                first_sems, second_sems, first_exp_params, second_exp_params)
 
 
 def run_all(folder_list, chance_level, overlaying=False):

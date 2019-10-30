@@ -92,57 +92,66 @@ def visualize(f_name, sig_index, windows, avg_values, chance_level):
     plt.close()
 
 # TODO clean up visualization arguments
-def visualize_still_and_video(f_name, v_sig_index, s_sig_index, windows_val, v_avg, s_avg, chance_level, v_sems, s_sems, exp_params, error_bar=True):
-    # decide on time
+def visualize_two_curves(f_name, first_sig_index, second_sig_index, windows_val, first_avg, second_avg, chance_level,
+                         first_sems, second_sems, first_exp_params, second_exp_params, error_bar=True):
 
+    if first_exp_params['input_type'] == second_exp_params['input_type']:
+        # Will be used for plot title
+        left_title = "Input type: " + first_exp_params['input_type']
+
+        label1 = first_exp_params['exp_type']
+        label2 = second_exp_params['exp_type']
+    elif first_exp_params['exp_type'] == second_exp_params['exp_type']:
+        # Will be used for plot title
+        left_title = "Experiment type: " + first_exp_params['exp_type']
+
+        label1 = first_exp_params['input_type']
+        label2 = second_exp_params['input_type']
 
     # take average accuracies from avg list
     # avg lists are in the form : [[time_window, accuracy]]
     # so 2-dim lists where in the inner list
     # first element is the time window (in a string)
     # and the second element is the accuracy
-    v_vals = [x[-1] for x in v_avg]
-    s_vals = [x[-1] for x in s_avg]
+    first_vals = [x[-1] for x in first_avg]
+    second_vals = [x[-1] for x in second_avg]
 
     fig, ax = plt.subplots()
     if (error_bar):
         # Video error bars
-        ax.errorbar(x=windows_val, y=v_vals, yerr=v_sems, capsize=5, label='Video')
+        ax.errorbar(x=windows_val, y=first_vals, yerr=first_sems, capsize=5, label=label1)
 
         # Still error bars
-        ax.errorbar(x=windows_val, y=s_vals, yerr=s_sems, capsize=5, label='Still')
+        ax.errorbar(x=windows_val, y=second_vals, yerr=second_sems, capsize=5, label=label2)
     else:
         # Without errorbars
-        ax.plot(windows_val, v_vals, label="Video")
-        ax.plot(windows_val, s_vals, label='Still')
+        ax.plot(windows_val, first_vals, label=label1)
+        ax.plot(windows_val, second_vals, label=label2)
 
-    # print(windows_val)
-    ax.plot(list(compress(windows_val, v_sig_index)), list(compress(v_vals, v_sig_index)),
+    # Mark significant time windows with red dots
+    ax.plot(list(compress(windows_val, first_sig_index)), list(compress(first_vals, first_sig_index)),
             linestyle="none", color='r', marker='o')
-    ax.plot(list(compress(windows_val, s_sig_index)), list(compress(s_vals, s_sig_index)),
+    ax.plot(list(compress(windows_val, second_sig_index)), list(compress(second_vals, second_sig_index)),
             linestyle="none", color='r', marker='o')
 
-
-
-    # show starting understanding and chance level
+    # show baseline and chance level
     ax.axvline(x=0, color='black', alpha=0.5, linestyle='--', label='end of baseline period')
     ax.axhline(y=chance_level, color='red', alpha=0.5, label='chance level')
 
-    if ('hra' == exp_params['target_labels']):
+    if ('hra' == first_exp_params['target_labels']):
         midtitle = "Classification among Human, Robot and Android agents"
-    elif ('hr' == exp_params['target_labels']):
+    elif ('hr' == first_exp_params['target_labels']):
         midtitle = "Classification between Human and Robot agents"
-    elif ('ra' in exp_params['target_labels']):
+    elif ('ra' in first_exp_params['target_labels']):
         midtitle = "Classification between Robot and Android agents"
-    elif ('ah' in exp_params['target_labels']):
+    elif ('ah' in first_exp_params['target_labels']):
         midtitle = "Classification between Human and Android agents"
 
     ax.set_xlabel('time (ms)')
     ax.set_ylabel('classification accuracy')
 
     ax.legend(loc='upper right')
-    left_title = "Naive experiment"
-    right_title= "Window size="+str(exp_params['w_size'])+"ms, window shift="+str(exp_params['shift'])+"ms"
+    right_title= "Window size=" + str(first_exp_params['w_size']) + "ms, window shift=" + str(first_exp_params['shift']) + "ms"
     fig.suptitle(midtitle,fontsize=12, fontweight='bold')
     ax.set_title("\n".join(wrap(left_title)), fontsize=9,loc='left')
     ax.set_title("\n".join(wrap(right_title)), fontsize=9, loc='right' )

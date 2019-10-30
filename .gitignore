@@ -9,7 +9,6 @@ __pycache__/
 code/.DS_Store
 # C extensions
 *.so
-.idea/
 # Distribution / packaging
 .Python
 build/
@@ -128,4 +127,4 @@ dmypy.json
 .pyre/
 
 .DS_Store
-.DS_Store
+/code/avg_accuracy.png
